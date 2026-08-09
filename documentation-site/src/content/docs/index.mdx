@@ -1,0 +1,40 @@
+---
+title: vyutils
+description: Composable utilities for structured text, folder traversal, and read-only SQLite delivery.
+template: splash
+hero:
+  tagline: Core-utils-style building blocks for versioned structured text and immutable read-only packages.
+  actions:
+    - text: Overview
+      link: explanation/overview/
+      icon: right-arrow
+    - text: mpt CLI reference
+      link: reference/mpt/
+      icon: document
+    - text: RFC-0001 — mpt format
+      link: rfcs/rfc-0001-mpt-format/
+      icon: right-arrow
+    - text: GitHub
+      link: https://github.com/project-vyasa/vyutils
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Crates
+
+<CardGrid>
+	<Card title="mpt" icon="document">
+		Multi-part-text format — parse, validate, and manipulate plain-text records with multiple sections. See the <a href="reference/mpt/">CLI reference</a>.
+	</Card>
+	<Card title="walk" icon="open-book">
+		Folder hierarchy traversal with config inheritance, ignore rules, and path metadata inference.
+	</Card>
+	<Card title="pack" icon="setting">
+		Compile `.mpt` records and schemas into an immutable SQLite package for static delivery.
+	</Card>
+	<Card title="render" icon="puzzle">
+		Narrative documents (Word, Google Docs, Markdown) from structured data — planned.
+	</Card>
+</CardGrid>

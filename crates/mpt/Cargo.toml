@@ -1,0 +1,22 @@
+[package]
+name = "mpt"
+description = "Multi-part-text (mpt) container format parser and serializer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "mpt"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mpt"
+path = "src/bin/mpt.rs"
+
+[dependencies]
+clap.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+pretty_assertions = "1.4"

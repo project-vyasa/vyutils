@@ -1,0 +1,22 @@
+{
+  "name": "vyutils-documentation-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "predeploy": "bun run build",
+    "deploy": "gh-pages --nojekyll -d dist"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.4",
+    "astro": "^7.0.2",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}

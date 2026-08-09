@@ -1,0 +1,11 @@
+[package]
+name = "pack"
+description = "Compile mpt records to SQLite (stub)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "pack"
+path = "src/lib.rs"

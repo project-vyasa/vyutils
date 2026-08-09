@@ -1,0 +1,11 @@
+[package]
+name = "walk"
+description = "Folder hierarchy traversal for vyutils (stub)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "walk"
+path = "src/lib.rs"

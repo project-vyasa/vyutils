@@ -4,24 +4,40 @@
 Common primitives are required to process structured text in a versioned filesystem,
 and package them into efficient formats for use as an in-memory datastore with efficient
 query language to analyze data. 
-Project Vyasa publication view file takes that approach to build compelling search and 
+Project Vyasa publication view takes a similar approach to build compelling search and 
 visualization of structured corpora like scriptural text.
 
-## Approach
-We will model after Unix core-utils, build a set of CLI utils that make it possible to compose 
-applications, with the option to create a single binary with zero dependencies. These
-building blocks should also be available as WASM components for web browser and other hosts.
-Rust is a natural choice to build components(crates) consumed by CLI.
-If there is a need to create web UI or compoents, use Svelte.
-Use astro starlight for documentation-site.
+vyutils is a **general-purpose** pipeline for custom read-only applications (e.g. mid-market
+CRM-style tools): infrequent writes in a versioned source tree, compile to an immutable SQLite
+package, deliver via static hosting.
 
-## Problems to tackle; all names are tentative to just get off the ground
-1. Define a multi-part-text (`mpt`) format that is human friendly to view and edit using a plain text editor. Learn from MIME, md+frontmatter and other prior work.
-2. `mpt` crate and CLI will allow creation, validation, manipulation (add a part, extract a part, delete a part, and so on).
-3. `folder` processes files in a folder hierarchy. Learn from vyasac, static site generators, etc.
-Examples of features include config file override per folder, naming convention for files to ignore,
-infer meaning from path components, TBD dev server and watch mode, TBD production server
-4. `mpt-db` builds on `folder` and `mpt` to create a db file suitable for delivering to a large
-number of viewers. Technologies to consider include sqlite, turso db, etc.
-This should enable delivering rich read-only applications like vyasa viewer, custom (readonly) DB apps 
-with user defined schema, forms, reports and so on.
+## Approach
+Model after GNU coreutils: composable tools, optional single binary, WASM for browser hosts.
+
+- **Rust** — library crates consumed by CLI (`[[bin]]` in-crate for now; separate `*-cli` crates deferred).
+- **Svelte** — web UI when needed.
+- **Astro Starlight** — project docs in `documentation-site/`.
+- **Dogfooding** — feature inventory cross-linked to tests and docs (see `inventory/` when scaffolded).
+- **Quality bar** — coreutils-level rigor in design, delivery, and user feedback.
+- **CLI discoverability** — each tool exposes `tree` (command/option snapshot from clap). Implementation lives in `mpt` for now; promote to a shared `cli-tree` crate when a second binary needs it.
+
+Work sequencing: [WORK.md](../WORK.md).
+
+## Crates (names settled)
+
+| Crate | Role |
+|-------|------|
+| `mpt` | Multi-part-text format: parse, validate, manipulate |
+| `walk` | Folder hierarchy: config inheritance, ignores, path inference |
+| `pack` | Compile `.mpt` records + schema → immutable SQLite for delivery |
+| `render` | Narrative documents (Word, Google Docs, Markdown) from structured data |
+
+## Format
+
+Multi-part-text (`.mpt`) — ``[ header`` / ``[ <part-id>`` / ``] header`` / ``] <part-id>`` (double-backtick sigil). Pre-part ``[ header`` = file metadata. See [RFC-0001](documentation-site/src/content/docs/rfcs/rfc-0001-mpt-format.md).
+
+Replaces informal `.mpx` naming in vyasa; existing inventory files are compatible starting points.
+
+## Invariant
+
+**The compiled database is immutable at runtime.** All authoritative edits occur in the source tree (`.mpt` files + config). Recompilation produces a new artifact version.

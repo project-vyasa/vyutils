@@ -1,0 +1,63 @@
+/* Shared with project-vyasa.github.io — org Starlight custom styles */
+
+:root {
+    --sl-font-size-h1: 2rem;
+    --sl-font-size-h2: 1.5rem;
+    --sl-font-size-h3: 1.25rem;
+    --sl-font-size-h4: 1.1rem;
+    --sl-font-size-h5: 1rem;
+    --sl-font-size-h6: 0.9rem;
+}
+
+.sl-markdown-content h1 {
+    font-size: var(--sl-font-size-h1);
+}
+
+.sl-markdown-content h2 {
+    font-size: var(--sl-font-size-h2);
+}
+
+.sl-markdown-content h3 {
+    font-size: var(--sl-font-size-h3);
+}
+
+.sl-markdown-content h4 {
+    font-size: var(--sl-font-size-h4);
+}
+
+.sl-markdown-content h5 {
+    font-size: var(--sl-font-size-h5);
+}
+
+.sl-markdown-content h6 {
+    font-size: var(--sl-font-size-h6);
+}
+
+/* Action button styling */
+.sl-link-button {
+    border-radius: 0.25rem !important;
+}
+
+.sl-link-button.primary {
+    background-color: #3b6ca5 !important;
+    border-color: #3b6ca5 !important;
+    color: #ffffff !important;
+}
+
+.sl-link-button.primary:hover {
+    background-color: #2e5786 !important;
+    border-color: #2e5786 !important;
+    color: #ffffff !important;
+}
+
+/* Clickable card header link styling */
+.card .title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.card .title a:hover {
+    color: #3b6ca5;
+    text-decoration: underline;
+}

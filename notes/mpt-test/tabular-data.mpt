@@ -1,0 +1,17 @@
+``[ header
+parts = 1
+checksum = foobaz
+``] header
+
+``[ states_psv
+``[ header
+delimiter = '|'
+``] header
+code|name|sentence
+CA|California|Golden State
+TX|Texas|Lone Star State
+NY|New York|Empire State
+FL|Florida|Sunshine State
+CO|Colorado|Centennial State
+
+``] states_psv
