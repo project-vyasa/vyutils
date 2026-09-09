@@ -1,0 +1,21 @@
+[package]
+name = "vyasa-lipi"
+description = "Universal Vedic and Classical Sanskrit transliteration engine for Indic scripts, ISO 15919, and IAST"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "vyasa_lipi"
+path = "src/lib.rs"
+
+[[bin]]
+name = "vyasa-lipi"
+path = "src/bin/vyasa-lipi.rs"
+
+[dependencies]
+vyasa-phonetics = { path = "../vyasa-phonetics" }
+
+[dev-dependencies]
+pretty_assertions = "1.4"
