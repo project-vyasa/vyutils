@@ -1,12 +1,23 @@
-/* Shared with project-vyasa.github.io — org Starlight custom styles */
+/* Import Vedic-capable Indic web fonts */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Kannada:wght@400;600;700&family=Noto+Sans+Telugu:wght@400;600;700&family=Noto+Serif+Telugu:wght@400;600;700&display=swap');
 
 :root {
+    --sl-font-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Telugu', 'Noto Sans Kannada', 'Noto Sans Devanagari', 'Kohinoor Telugu', sans-serif;
+    --sl-font-system-mono: Menlo, 'SF Mono', Monaco, Consolas, 'Courier New', 'Liberation Mono', 'Noto Sans Telugu', 'Noto Sans Kannada', 'Noto Sans Devanagari', monospace;
+    --sl-font: var(--sl-font-system);
+    --sl-font-mono: var(--sl-font-system-mono);
+
     --sl-font-size-h1: 2rem;
     --sl-font-size-h2: 1.5rem;
     --sl-font-size-h3: 1.25rem;
     --sl-font-size-h4: 1.1rem;
     --sl-font-size-h5: 1rem;
     --sl-font-size-h6: 0.9rem;
+}
+
+/* Explicit font fallbacks for code blocks to render Vedic combining accents properly */
+code, pre, kbd, samp {
+    font-family: var(--sl-font-mono);
 }
 
 .sl-markdown-content h1 {

@@ -20,7 +20,9 @@ vyutils/
 │   ├── mpt/
 │   ├── walk/
 │   ├── pack/
-│   └── render/
+│   ├── render/
+│   ├── vyasa-phonetics/
+│   └── vyasa-lipi/
 ├── documentation-site/      # Astro Starlight (RFCs, guides)
 ├── inventory/
 └── notes/
@@ -63,3 +65,4 @@ vyutils/
 | Workspace scaffold | Root `Cargo.toml`; crates `mpt`, `walk`, `pack`, `render`; `cargo test` green. |
 | `mpt` crate (minimal) | Parse, validate, canonical serialize; CLI `validate` + `canonicalize`; RFC example integration tests. |
 | `mpt` CLI part + merge | `mpt part extract|add|remove`; `mpt merge`; `mpt tree`; library `edit` + `command_tree` modules. |
+| `mpt` part option-map | TOML inline table on part opens; `csv` `delimiter` (RFC-0001 2026-08-14). |

@@ -5,6 +5,9 @@ members = [
     "crates/walk",
     "crates/pack",
     "crates/render",
+    "crates/vyasa-phonetics",
+    "crates/vyasa-lipi",
+    "crates/vyasa-patha",
 ]
 
 [workspace.package]

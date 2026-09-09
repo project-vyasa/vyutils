@@ -34,7 +34,7 @@ Work sequencing: [WORK.md](../WORK.md).
 
 ## Format
 
-Multi-part-text (`.mpt`) — ``[ header`` / ``[ <part-id>`` / ``] header`` / ``] <part-id>`` (double-backtick sigil). Pre-part ``[ header`` = file metadata. See [RFC-0001](documentation-site/src/content/docs/rfcs/rfc-0001-mpt-format.md).
+Multi-part-text (`.mpt`) uses a **double grave-accent SIGIL** at column 0 plus bracket envelopes (`[ label` / `] label`). Pre-part `header` label = file metadata. See [RFC-0001](documentation-site/src/content/docs/rfcs/rfc-0001-mpt-format.md).
 
 Replaces informal `.mpx` naming in vyasa; existing inventory files are compatible starting points.
 
