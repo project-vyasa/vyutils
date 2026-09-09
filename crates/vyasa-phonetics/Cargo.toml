@@ -1,0 +1,9 @@
+[package]
+name = "vyasa-phonetics"
+description = "Pre-Pāṇinian, Pāṇinian, and Classical Sanskrit phonetics, sound classifications, and pratyāhāra engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
