@@ -72,3 +72,40 @@ code, pre, kbd, samp {
     color: #3b6ca5;
     text-decoration: underline;
 }
+
+/* Layout: Fixed sidebars on left and right, middle section takes up all remaining space */
+:root {
+    --sl-sidebar-width: 18.5rem;    /* Fixed left navigation navbar width */
+    --sl-toc-width: 17.5rem;        /* Fixed right On-this-page TOC width */
+    --sl-content-width: 100%;       /* Fill middle space */
+}
+
+@media (min-width: 72rem) {
+    /* Right TOC: fixed width */
+    .right-sidebar-container {
+        width: var(--sl-toc-width) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .right-sidebar {
+        width: var(--sl-toc-width) !important;
+    }
+
+    /* Main middle section: occupies all remaining space with minimum width */
+    [data-has-sidebar][data-has-toc] .main-pane,
+    :root[data-has-sidebar][data-has-toc] .main-pane,
+    .main-pane {
+        width: calc(100% - var(--sl-toc-width)) !important;
+        flex: 1 1 auto !important;
+        min-width: 36rem !important;
+        max-width: 100% !important;
+    }
+
+    /* Allow the inner container to expand and use the full middle width */
+    .content-panel .sl-container,
+    .sl-container {
+        max-width: 100% !important;
+        margin-inline: 0 !important;
+    }
+}
+
