@@ -1,0 +1,22 @@
+[package]
+name = "vyasa-patha"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Vedic & Classical Sanskrit recitation mode engine (Prakṛti and Vikṛti pāṭhas, Pragṛhya, and Parigraha)"
+
+[dependencies]
+vyasa-phonetics = { path = "../vyasa-phonetics" }
+vyasa-lipi = { path = "../vyasa-lipi" }
+clap = { workspace = true, optional = true }
+
+[features]
+default = ["cli", "std"]
+std = []
+cli = ["dep:clap", "std"]
+
+[[bin]]
+name = "vyasa-patha"
+path = "src/bin/vyasa-patha.rs"
+required-features = ["cli"]
