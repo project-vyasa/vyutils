@@ -64,7 +64,7 @@ fn parses_multi_format_document() {
     let doc = parse(MULTI_FORMAT).expect("multi-format doc");
     assert_eq!(
         doc.file_header.as_ref().map(|h| h.payload.as_str()),
-        Some("classification = research")
+        Some("classification = research\n")
     );
     assert_eq!(doc.parts.len(), 3);
     assert_eq!(doc.parts[0].id, "abstract");
@@ -75,6 +75,7 @@ fn parses_multi_format_document() {
     assert!(doc.parts[1].body.contains("`chapter 1"));
     assert_eq!(doc.parts[2].id, "references");
     assert_eq!(doc.parts[2].body_format, Format::Toml);
+    assert!(doc.parts.iter().all(|part| part.options.is_empty()));
 }
 
 #[test]
@@ -91,7 +92,10 @@ fn parses_feature_inventory() {
 #[test]
 fn parses_empty_file_header() {
     let doc = parse(MACHINE_GENERATED).expect("machine generated");
-    assert!(doc.file_header.as_ref().is_some_and(|h| h.payload.is_empty()));
+    assert!(doc
+        .file_header
+        .as_ref()
+        .is_some_and(|h| h.payload.is_empty()));
     assert_eq!(doc.parts[0].id, "build-log");
 }
 
@@ -107,7 +111,7 @@ fn round_trip_multi_format() {
     let doc = parse(MULTI_FORMAT).expect("parse");
     let serialized = to_string(&doc).expect("serialize");
     let reparsed = parse(&serialized).expect("reparse");
-    assert_eq!(doc, reparsed);
+    assert_eq!(serialized, to_string(&reparsed).expect("re-serialize"));
 }
 
 #[test]
@@ -120,6 +124,7 @@ fn canonical_omits_default_formats() {
         parts: vec![Part {
             id: "metadata".to_string(),
             body_format: Format::Text,
+            options: Default::default(),
             header: None,
             body: String::new(),
         }],
@@ -191,7 +196,7 @@ title = "x"
 fn accepts_crlf_input() {
     let input = "``[ a\r\nbody\r\n``] a\r\n";
     let doc = parse(input).expect("crlf");
-    assert_eq!(doc.parts[0].body, "body");
+    assert_eq!(doc.parts[0].body, "body\n");
 }
 
 #[test]

@@ -26,8 +26,18 @@ pub enum ParseError {
     UnexpectedEnvelope { line: usize, content: String },
     #[error("invalid envelope line at line {line}: {content}")]
     InvalidEnvelope { line: usize, content: String },
-    #[error("envelope line only allows `format = <name>`; found at line {line}: {content}")]
+    #[error("envelope line only allows `format = <name>` plus an optional option-map; found at line {line}: {content}")]
     InvalidFormatClause { line: usize, content: String },
+    #[error("option-map is not allowed on header envelopes (line {line}): {content}")]
+    OptionMapOnHeader { line: usize, content: String },
+    #[error("empty option-map is not allowed (line {line})")]
+    EmptyOptionMap { line: usize },
+    #[error("invalid option-map at line {line}: {content}")]
+    InvalidOptionMap { line: usize, content: String },
+    #[error("unknown option `{key}` for format `{format}`")]
+    UnknownOptionKey { format: String, key: String },
+    #[error("invalid option `{key}`: {reason}")]
+    InvalidOptionValue { key: String, reason: String },
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]

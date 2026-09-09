@@ -61,9 +61,12 @@ mpt part remove <path> <id> [options]
 |-------|----------|
 | **Stdout default** | Mutating commands (`add`, `remove`, `merge` without `-o`) print the canonical document to stdout. |
 | **In-place** | `--in-place` rewrites the input file (`add`, `remove` only). Conflicts with `-o`. |
-| **Canonical output** | Serialize uses LF line endings and omits default `format = …` on envelope lines. |
+| **Canonical output** | Serialize uses LF line endings, omits default `format = …`, and omits default option-map keys (e.g. `csv` `delimiter = ","`). |
 | **Exit code** | `0` on success; non-zero on parse, validation, or edit errors. |
 | **Errors** | Messages on stderr; format `path: reason`. |
+| **`parts` in file header** | Tool-maintained; refreshed on canonical serialize and `part add` / `part remove`. Other commands warn if declared `parts` ≠ actual count. |
+
+Provenance and license fields belong in the **file header** TOML payload (`#` line comments OK). Do not hand-edit `parts = <n>`.
 
 ## `mpt validate`
 
@@ -131,6 +134,8 @@ mpt part extract <path> <id> [-o <path>] [--header | --full]
 
 Default (no flags): part **body** bytes only.
 
+Stdout and `-o` / `--output` write the stored payload **exactly** as parsed (including a trailing LF when the last content line had one).
+
 ## `mpt part add`
 
 Insert a new part. Body is read from `--body-file` or **stdin** when omitted.
@@ -153,6 +158,8 @@ mpt part add <path> <id> [options]
 If neither `--before` nor `--after` is set, the part is appended at the end.
 
 Registered format names: `toml`, `text`, `yaml`, `json5`, `xml`, `vyasa`, `csv`.
+
+Part-open **option-map** (TOML inline table) is parsed and canonicalized with the document. v1 `csv` key: `delimiter` (default `","`). There is no CLI flag to set it yet; put it on the envelope line in the file.
 
 ## `mpt part remove`
 

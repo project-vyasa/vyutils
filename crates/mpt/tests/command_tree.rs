@@ -7,7 +7,11 @@ fn tree_command_lists_all_subcommands() {
         .arg("tree")
         .output()
         .expect("run mpt tree");
-    assert!(output.status.success(), "stderr: {}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let tree = String::from_utf8(output.stdout).expect("utf8");
     assert!(tree.starts_with("mpt\n"));
     assert!(tree.contains("validate <path>"));
@@ -15,5 +19,8 @@ fn tree_command_lists_all_subcommands() {
     assert!(tree.contains("extract <path> <id>"));
     assert!(tree.contains("--header"));
     assert!(tree.contains("merge <input>…"));
-    assert!(!tree.contains("--header <"), "boolean flags should not take values");
+    assert!(
+        !tree.contains("--header <"),
+        "boolean flags should not take values"
+    );
 }

@@ -1,13 +1,13 @@
 ---
-title: Overview
-description: Motivation, approach, and invariants for the vyutils project.
+title: Multi-part-text (MPT) utilities
+description: Motivation, approach, and invariants for the MPT format.
 ---
 
 ## Motivation
 
 Common primitives are required to process structured text in a versioned filesystem and package it into efficient formats for use as an in-memory datastore with a query language to analyze data.
 
-vyutils is a **general-purpose** pipeline for custom read-only applications (for example, mid-market CRM-style tools): infrequent writes in a versioned source tree, compile to an immutable SQLite package, deliver via static hosting.
+mpt and related utils form a **general-purpose** pipeline for custom read-only applications: infrequent writes in a versioned source tree, compile to an immutable SQLite package, deliver via static hosting.
 
 Project Vyasa publication view is one possible consumer, not the primary driver.
 

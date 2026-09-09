@@ -37,11 +37,7 @@ pub fn merge(documents: Vec<Document>) -> Result<Document, EditError> {
 }
 
 /// Insert a part into a document.
-pub fn add_part(
-    doc: &mut Document,
-    part: Part,
-    position: InsertPosition,
-) -> Result<(), EditError> {
+pub fn add_part(doc: &mut Document, part: Part, position: InsertPosition) -> Result<(), EditError> {
     if doc.parts.iter().any(|p| p.id == part.id) {
         return Err(EditError::DuplicatePartId(part.id));
     }
@@ -52,12 +48,13 @@ pub fn add_part(
             .iter()
             .position(|p| p.id == *id)
             .ok_or_else(|| EditError::PartNotFound(id.clone()))?,
-        InsertPosition::After(ref id) => doc
-            .parts
-            .iter()
-            .position(|p| p.id == *id)
-            .ok_or_else(|| EditError::PartNotFound(id.clone()))?
-            + 1,
+        InsertPosition::After(ref id) => {
+            doc.parts
+                .iter()
+                .position(|p| p.id == *id)
+                .ok_or_else(|| EditError::PartNotFound(id.clone()))?
+                + 1
+        }
     };
     doc.parts.insert(idx, part);
     Ok(())

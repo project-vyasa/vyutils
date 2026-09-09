@@ -17,6 +17,7 @@ path = "src/bin/mpt.rs"
 [dependencies]
 clap.workspace = true
 thiserror.workspace = true
+toml = "0.8"
 
 [dev-dependencies]
 pretty_assertions = "1.4"

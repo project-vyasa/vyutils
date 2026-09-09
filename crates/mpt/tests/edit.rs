@@ -124,6 +124,7 @@ fn add_part_at_end() {
         Part {
             id: "gamma".to_string(),
             body_format: Format::Text,
+            options: Default::default(),
             header: None,
             body: "gamma body".to_string(),
         },
@@ -142,6 +143,7 @@ fn add_part_before_existing() {
         Part {
             id: "gamma".to_string(),
             body_format: Format::Text,
+            options: Default::default(),
             header: None,
             body: "gamma".to_string(),
         },
@@ -178,7 +180,7 @@ only
 fn finds_part_by_id() {
     let doc = sample_doc();
     let part = find_part(&doc, "beta").unwrap();
-    assert_eq!(part.body, "beta body");
+    assert_eq!(part.body, "beta body\n");
 }
 
 #[test]
@@ -189,6 +191,7 @@ fn edit_round_trip_through_serialize() {
         Part {
             id: "gamma".to_string(),
             body_format: Format::Yaml,
+            options: Default::default(),
             header: Some(HeaderBlock {
                 format: Format::Toml,
                 payload: "key = 1".to_string(),
@@ -201,5 +204,5 @@ fn edit_round_trip_through_serialize() {
     remove_part(&mut doc, "beta").unwrap();
     let serialized = to_string(&doc).unwrap();
     let reparsed = parse(&serialized).unwrap();
-    assert_eq!(doc, reparsed);
+    assert_eq!(serialized, to_string(&reparsed).unwrap());
 }

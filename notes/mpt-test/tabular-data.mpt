@@ -1,17 +1,24 @@
 ``[ header
-parts = 1
-checksum = foobaz
+# Provenance (file-level; TOML line comments are fine)
+[source]
+institution = "Example corpus"
+license = "CC-BY-NC-4.0"
 ``] header
 
-``[ states_psv
-``[ header
-delimiter = '|'
-``] header
+``[ states format = csv { delimiter = "|" }
 code|name|sentence
 CA|California|Golden State
 TX|Texas|Lone Star State
 NY|New York|Empire State
 FL|Florida|Sunshine State
 CO|Colorado|Centennial State
+``] states
 
-``] states_psv
+``[ cities format = csv { delimiter = ";" }
+code;city;state
+SFO;San Francisco;CA
+LAX;Los Angeles;CA
+NYC;New York;NY
+MIA;Miami;FL
+DEN;Denver;CO
+``] cities

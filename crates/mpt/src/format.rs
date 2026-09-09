@@ -48,4 +48,38 @@ impl Format {
     pub fn emit_on_part_body(self) -> bool {
         self != Self::BODY_DEFAULT
     }
+
+    pub fn allowed_option_keys(self) -> &'static [&'static str] {
+        match self {
+            Self::Csv => &["delimiter"],
+            _ => &[],
+        }
+    }
+
+    pub fn allows_option(self, key: &str) -> bool {
+        self.allowed_option_keys().contains(&key)
+    }
+
+    pub fn is_default_option(self, key: &str, value: &str) -> bool {
+        match (self, key) {
+            (Self::Csv, "delimiter") => value == ",",
+            _ => false,
+        }
+    }
+
+    pub fn validate_option(self, key: &str, value: &str) -> Result<()> {
+        if !self.allows_option(key) {
+            return Err(ParseError::UnknownOptionKey {
+                format: self.as_str().to_string(),
+                key: key.to_string(),
+            });
+        }
+        if self == Self::Csv && key == "delimiter" && value.chars().count() != 1 {
+            return Err(ParseError::InvalidOptionValue {
+                key: key.to_string(),
+                reason: "delimiter must be a single character".to_string(),
+            });
+        }
+        Ok(())
+    }
 }

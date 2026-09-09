@@ -1,16 +1,25 @@
 use crate::ast::{Document, HeaderBlock, Part};
 use crate::error::{ParseError, Result};
 use crate::format::Format;
+use std::collections::BTreeMap;
 
 const SIGIL: &str = "``";
 const HEADER_LABEL: &str = "header";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum EnvelopeKind {
-    Header { format: Format },
+    Header {
+        format: Format,
+    },
     HeaderEnd,
-    Part { id: String, body_format: Format },
-    PartEnd { id: String },
+    Part {
+        id: String,
+        body_format: Format,
+        options: BTreeMap<String, String>,
+    },
+    PartEnd {
+        id: String,
+    },
 }
 
 pub fn parse(input: &str) -> Result<Document> {
@@ -116,7 +125,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_part(&mut self) -> Result<Part> {
-        let (id, body_format) = self.expect_part_open()?;
+        let (id, body_format, options) = self.expect_part_open()?;
         let header = if matches!(
             self.classify_envelope_line()?,
             Some(EnvelopeKind::Header { .. })
@@ -127,9 +136,7 @@ impl<'a> Parser<'a> {
         };
         let mut body = String::new();
         while let Some(line) = self.peek_line() {
-            if let Some(EnvelopeKind::PartEnd { id: close_id }) =
-                self.classify_envelope_line()?
-            {
+            if let Some(EnvelopeKind::PartEnd { id: close_id }) = self.classify_envelope_line()? {
                 if close_id != id {
                     return Err(ParseError::PartEndMismatch {
                         expected: id,
@@ -137,10 +144,10 @@ impl<'a> Parser<'a> {
                     });
                 }
                 self.consume_line();
-                trim_trailing_newline(&mut body);
                 return Ok(Part {
                     id,
                     body_format,
+                    options,
                     header,
                     body,
                 });
@@ -162,9 +169,11 @@ impl<'a> Parser<'a> {
         let format = self.expect_header_open()?;
         let mut payload = String::new();
         while let Some(line) = self.peek_line() {
-            if matches!(self.classify_envelope_line()?, Some(EnvelopeKind::HeaderEnd)) {
+            if matches!(
+                self.classify_envelope_line()?,
+                Some(EnvelopeKind::HeaderEnd)
+            ) {
                 self.consume_line();
-                trim_trailing_newline(&mut payload);
                 return Ok(HeaderBlock { format, payload });
             }
             if self.is_envelope_line(line) {
@@ -183,7 +192,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn expect_part_open(&mut self) -> Result<(String, Format)> {
+    fn expect_part_open(&mut self) -> Result<(String, Format, BTreeMap<String, String>)> {
         self.skip_blank_lines();
         let line = self.peek_line().ok_or(ParseError::ExpectedPart)?;
         if !self.is_envelope_line(line) {
@@ -191,9 +200,13 @@ impl<'a> Parser<'a> {
         }
         let line_num = self.current_line_number();
         match parse_envelope_kind(line, line_num)? {
-            EnvelopeKind::Part { id, body_format } => {
+            EnvelopeKind::Part {
+                id,
+                body_format,
+                options,
+            } => {
                 self.consume_line();
-                Ok((id, body_format))
+                Ok((id, body_format, options))
             }
             _ => Err(ParseError::ExpectedPart),
         }
@@ -260,20 +273,16 @@ fn parse_open_envelope(after: &str, line: &str, line_num: usize) -> Result<Envel
     }
     if let Some(remainder) = after.strip_prefix(HEADER_LABEL) {
         if remainder.is_empty() || remainder.starts_with(' ') {
-            let format = parse_format_clause(
-                remainder.trim(),
-                Format::HEADER_DEFAULT,
-                line_num,
-                line,
-            )?;
+            let format = parse_header_open_remainder(remainder.trim(), line, line_num)?;
             return Ok(EnvelopeKind::Header { format });
         }
     }
     let (id, remainder) = split_id_and_remainder(after, line_num)?;
-    let body_format = parse_format_clause(remainder, Format::BODY_DEFAULT, line_num, line)?;
+    let (body_format, options) = parse_part_open_remainder(remainder, line, line_num)?;
     Ok(EnvelopeKind::Part {
         id: id.to_string(),
         body_format,
+        options,
     })
 }
 
@@ -306,36 +315,133 @@ fn split_id_and_remainder(after: &str, line_num: usize) -> Result<(&str, &str)> 
     Ok((id, remainder))
 }
 
-fn parse_format_clause(
-    remainder: &str,
-    default: Format,
-    line_num: usize,
-    line: &str,
-) -> Result<Format> {
+fn parse_header_open_remainder(remainder: &str, line: &str, line_num: usize) -> Result<Format> {
+    let remainder = remainder.trim();
     if remainder.is_empty() {
-        return Ok(default);
+        return Ok(Format::HEADER_DEFAULT);
     }
-    let Some(eq_pos) = remainder.find('=') else {
+    if remainder.starts_with('{') {
+        return Err(ParseError::OptionMapOnHeader {
+            line: line_num,
+            content: line.to_string(),
+        });
+    }
+    let (format, rest) = parse_format_clause(remainder, line, line_num)?;
+    if !rest.is_empty() {
+        return Err(ParseError::OptionMapOnHeader {
+            line: line_num,
+            content: line.to_string(),
+        });
+    }
+    Ok(format)
+}
+
+fn parse_part_open_remainder(
+    remainder: &str,
+    line: &str,
+    line_num: usize,
+) -> Result<(Format, BTreeMap<String, String>)> {
+    let remainder = remainder.trim();
+    if remainder.is_empty() {
+        return Ok((Format::BODY_DEFAULT, BTreeMap::new()));
+    }
+    let (format, rest) = if remainder.starts_with('{') {
+        (Format::BODY_DEFAULT, remainder)
+    } else {
+        parse_format_clause(remainder, line, line_num)?
+    };
+    let rest = rest.trim();
+    if rest.is_empty() {
+        return Ok((format, BTreeMap::new()));
+    }
+    if !rest.starts_with('{') {
+        return Err(ParseError::InvalidFormatClause {
+            line: line_num,
+            content: line.to_string(),
+        });
+    }
+    let options = parse_option_map(rest, format, line, line_num)?;
+    Ok((format, options))
+}
+
+fn parse_format_clause<'a>(
+    remainder: &'a str,
+    line: &str,
+    line_num: usize,
+) -> Result<(Format, &'a str)> {
+    let Some(after_key) = remainder.strip_prefix("format") else {
         return Err(ParseError::InvalidFormatClause {
             line: line_num,
             content: line.to_string(),
         });
     };
-    let key = remainder[..eq_pos].trim();
-    let value = remainder[eq_pos + 1..].trim();
-    if key != "format" {
+    if !after_key.is_empty() && !after_key.starts_with(|c: char| c.is_whitespace() || c == '=') {
         return Err(ParseError::InvalidFormatClause {
             line: line_num,
             content: line.to_string(),
         });
     }
-    if value.is_empty() {
+    let after_key = after_key.trim_start();
+    let Some(after_eq) = after_key.strip_prefix('=') else {
+        return Err(ParseError::InvalidFormatClause {
+            line: line_num,
+            content: line.to_string(),
+        });
+    };
+    let after_eq = after_eq.trim_start();
+    let name_len = after_eq
+        .find(|c: char| !c.is_ascii_lowercase() && !c.is_ascii_digit())
+        .unwrap_or(after_eq.len());
+    if name_len == 0 {
         return Err(ParseError::InvalidFormatClause {
             line: line_num,
             content: line.to_string(),
         });
     }
-    Format::parse_name(value)
+    let name = &after_eq[..name_len];
+    if !name.starts_with(|c: char| c.is_ascii_lowercase()) {
+        return Err(ParseError::InvalidFormatClause {
+            line: line_num,
+            content: line.to_string(),
+        });
+    }
+    let format = Format::parse_name(name)?;
+    Ok((format, after_eq[name_len..].trim_start()))
+}
+
+fn parse_option_map(
+    raw: &str,
+    format: Format,
+    line: &str,
+    line_num: usize,
+) -> Result<BTreeMap<String, String>> {
+    let wrapped = format!("_ = {raw}");
+    let table: toml::Table = wrapped.parse().map_err(|_| ParseError::InvalidOptionMap {
+        line: line_num,
+        content: line.to_string(),
+    })?;
+    let inner = table
+        .get("_")
+        .and_then(|value| value.as_table())
+        .ok_or_else(|| ParseError::InvalidOptionMap {
+            line: line_num,
+            content: line.to_string(),
+        })?;
+    if inner.is_empty() {
+        return Err(ParseError::EmptyOptionMap { line: line_num });
+    }
+    let mut options = BTreeMap::new();
+    for (key, value) in inner {
+        let Some(string) = value.as_str() else {
+            return Err(ParseError::InvalidOptionValue {
+                key: key.clone(),
+                reason: "v1 option-map values must be strings".to_string(),
+            });
+        };
+        format.validate_option(key, string)?;
+        options.insert(key.clone(), string.to_string());
+    }
+    Ok(options)
 }
 
 fn validate_part_id(id: &str) -> Result<()> {
@@ -347,23 +453,15 @@ fn validate_part_id(id: &str) -> Result<()> {
             .next()
             .is_some_and(|c| c.is_ascii_lowercase() && c.is_ascii_alphanumeric())
     } else {
-        id.chars().all(|c| {
-            c.is_ascii_lowercase() || c == '-' || c == '_' || c.is_ascii_digit()
-        }) && id
-            .starts_with(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphanumeric())
-            && id
-                .ends_with(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphanumeric())
+        id.chars()
+            .all(|c| c.is_ascii_lowercase() || c == '-' || c == '_' || c.is_ascii_digit())
+            && id.starts_with(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphanumeric())
+            && id.ends_with(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphanumeric())
             && !id.contains("--")
     };
     if valid {
         Ok(())
     } else {
         Err(ParseError::InvalidPartId(id.to_string()))
-    }
-}
-
-fn trim_trailing_newline(s: &mut String) {
-    if s.ends_with('\n') {
-        s.pop();
     }
 }

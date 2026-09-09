@@ -1,7 +1,7 @@
 use clap::{CommandFactory, Parser, Subcommand};
 use mpt::{
-    add_part, find_part, merge, parse, remove_part, render_command_tree, to_string, Document,
-    Format, HeaderBlock, InsertPosition, Part,
+    add_part, find_part, merge, parse, parts_count_warning, remove_part, render_command_tree,
+    to_string, Document, Format, HeaderBlock, InsertPosition, Part,
 };
 use std::fs;
 use std::io::{self, Read};
@@ -192,7 +192,12 @@ fn read_body(body_file: Option<&PathBuf>) -> Result<String, String> {
     }
 }
 
-fn write_output(content: &str, path: &Path, in_place: bool, output: Option<&PathBuf>) -> Result<(), String> {
+fn write_output(
+    content: &str,
+    path: &Path,
+    in_place: bool,
+    output: Option<&PathBuf>,
+) -> Result<(), String> {
     let target = if in_place {
         path
     } else if let Some(out) = output {
@@ -221,15 +226,23 @@ struct PartAddOptions<'a> {
     in_place: bool,
 }
 
+fn warn_parts_count(path: &Path, doc: &Document) {
+    if let Some(message) = parts_count_warning(doc) {
+        eprintln!("{}: warning: {message}", path.display());
+    }
+}
+
 fn run_validate(path: &PathBuf) -> Result<(), String> {
     let input = read_file(path)?;
-    parse(&input).map_err(|e| format!("{}: {e}", path.display()))?;
+    let doc = parse(&input).map_err(|e| format!("{}: {e}", path.display()))?;
+    warn_parts_count(path, &doc);
     Ok(())
 }
 
 fn run_canonicalize(path: &PathBuf) -> Result<String, String> {
     let input = read_file(path)?;
     let doc = parse(&input).map_err(|e| format!("{}: {e}", path.display()))?;
+    warn_parts_count(path, &doc);
     to_string(&doc).map_err(|e| format!("{}: {e}", path.display()))
 }
 
@@ -241,6 +254,7 @@ fn run_merge(inputs: &[PathBuf], output: Option<&PathBuf>) -> Result<String, Str
     for path in inputs {
         let input = read_file(path)?;
         let doc = parse(&input).map_err(|e| format!("{}: {e}", path.display()))?;
+        warn_parts_count(path, &doc);
         documents.push(doc);
     }
     let merged = merge(documents).map_err(|e| format!("merge: {e}"))?;
@@ -261,6 +275,7 @@ fn run_part_extract(
 ) -> Result<String, String> {
     let input = read_file(path)?;
     let doc = parse(&input).map_err(|e| format!("{}: {e}", path.display()))?;
+    warn_parts_count(path, &doc);
     let part = find_part(&doc, id).map_err(|e| format!("{}: {e}", path.display()))?;
 
     let content = if full {
@@ -322,6 +337,7 @@ fn run_part_add(opts: PartAddOptions<'_>) -> Result<String, String> {
     let part = Part {
         id: id.to_string(),
         body_format,
+        options: Default::default(),
         header,
         body,
     };

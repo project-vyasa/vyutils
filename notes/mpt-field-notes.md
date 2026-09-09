@@ -50,6 +50,22 @@ Observations from real use of the `.mpt` format and `mpt` tooling (`n=1` is fine
 - **Disposition:** ack
 - **Notes:** `.` is URL-safe (RFC 3986 unreserved); mpt uses a stricter slug grammar. Use `states-psv` or `states_psv` instead of extension-style ids. Underscore `_` is allowed; dot `.` is not.
 
+### 2026-08-09 — attribution in file header
+
+- **Friction:** Considered a separate `attribution` part for license/provenance (Muktabodha-style banners).
+- **Example:** `notes/mpt-test/tabular-data.mpt`
+- **Decision:** Document-level attribution belongs in the **file header** (TOML payload, `#` line comments OK) — not a separate part.
+- **Disposition:** done
+- **Notes:** `parts = <n>` is tool-maintained (`mpt` canonicalize / `part add|remove`); other commands warn on mismatch.
+
+### 2026-08-09 — tabular data (`csv` + delimiter)
+
+- **Friction:** `states_psv` part id implied pipe-separated; `psv` is not a standard extension; registry should not grow per delimiter.
+- **Example:** `notes/mpt-test/tabular-data.mpt` — now `states format = csv` with `delimiter = '|'` in part header.
+- **Decision:** One registry name (`csv`) for DSV-family tabular bodies; delimiter in the part open **option-map** (TOML inline table). Nested part header is not required for this.
+- **Disposition:** done
+- **Notes:** Supersedes putting `delimiter` in the part-header payload. Parser/serialize of the option-map is still pending (see 2026-08-14 entry).
+
 ### 2026-08-09 — bracket envelope syntax
 
 - **Friction:** `part-end`, `header-end` felt verbose; wanted uniform open/close from the user's perspective.
@@ -58,3 +74,12 @@ Observations from real use of the `.mpt` format and `mpt` tooling (`n=1` is fine
 - **Actual:** Adopted in RFC + `mpt` parser. `header` reserved as label; part ids cannot be `header`.
 - **Disposition:** done
 - **Notes:** Legacy ``part`` / ``part-end`` / ``header-end`` syntax rejected. Checksums stay optional in header payload; compile-time integrity deferred to `pack`.
+
+### 2026-08-14 — part-header overhead vs format option-map
+
+- **Friction:** Nested part-header blocks are right for multi-line metadata, overbearing for a single parser knob such as `delimiter = '|'`.
+- **Example:** `notes/mpt-test/tabular-data.mpt` — `states` / `cities` each wrap one TOML line in a full header envelope.
+- **Expected:** Format-scoped scalars on the part open line, with an enclosing context (not bare `k = v`).
+- **Decision:** Optional **TOML 1.0 inline table** after `format = <name>` on **part** opens only. v1 `csv` key: `delimiter` (default `","`). UTF-8 remains implicit; `encoding` is not a v1 key. Part-header blocks stay for multi-line descriptive content.
+- **Disposition:** done
+- **Notes:** [RFC-0001](../documentation-site/src/content/docs/rfcs/rfc-0001-mpt-format.md) + `mpt` parse/serialize. Sample: `notes/mpt-test/tabular-data.mpt`.

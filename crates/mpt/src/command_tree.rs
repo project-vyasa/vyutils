@@ -18,7 +18,11 @@ fn render_children(cmd: &Command, prefix: &str, out: &mut String) {
         .collect();
     let last = subs.len().saturating_sub(1);
     for (index, sub) in subs.iter().enumerate() {
-        let connector = if index == last { "└── " } else { "├── " };
+        let connector = if index == last {
+            "└── "
+        } else {
+            "├── "
+        };
         let branch = if index == last { "    " } else { "│   " };
         writeln!(out, "{prefix}{connector}{}", command_label(sub)).expect("writing to string");
         render_flags(sub, &format!("{prefix}{branch}"), out);
@@ -30,7 +34,11 @@ fn render_flags(cmd: &Command, prefix: &str, out: &mut String) {
     let flags = option_lines(cmd);
     let last = flags.len().saturating_sub(1);
     for (index, flag) in flags.iter().enumerate() {
-        let connector = if index == last { "└── " } else { "├── " };
+        let connector = if index == last {
+            "└── "
+        } else {
+            "├── "
+        };
         writeln!(out, "{prefix}{connector}{flag}").expect("writing to string");
     }
 }
