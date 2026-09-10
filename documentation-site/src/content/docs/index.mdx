@@ -17,6 +17,10 @@ hero:
       link: explanation/recitation-modes/
       icon: open-book
       variant: secondary
+    - text: Developer Guide (Rust & WASM)
+      link: guides/sanskrit-developer-guide/
+      icon: rocket
+      variant: primary
     - text: Multi-part Text
       link: explanation/multi-part-text/
       variant: secondary
@@ -27,6 +31,9 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 ## Crates
 
 <CardGrid>
+	<Card title="vyasa-sanskrit-wasm" icon="laptop">
+		Zero-backend WebAssembly module bundling phonetics, transliteration, and recitation into a 133 KB package (@project-vyasa/sanskrit-wasm). See the <a href="guides/sanskrit-developer-guide/">Developer Guide</a> and <a href="reference/vyasa-sanskrit-wasm/">API reference</a>.
+	</Card>
 	<Card title="vyasa-patha" icon="random">
 		Vedic & Classical Sanskrit recitation generator (Pada-pāṭha, Krama-pāṭha, Vikṛti pāṭhas) with Pragṛhya detection, Parigraha formatting, and multi-script output. See the <a href="reference/vyasa-patha/">CLI & API reference</a> and <a href="explanation/recitation-modes/">recitation modes explanation</a>.
 	</Card>

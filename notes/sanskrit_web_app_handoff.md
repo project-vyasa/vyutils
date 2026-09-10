@@ -44,8 +44,8 @@ Create a web-based, browser-first Sanskrit Linguistic & Recitation Studio runnin
 │  └─────────────┼───────────────────┼───────────────────┼────────────┘  │
 │                ▼                   ▼                   ▼               │
 │  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │              WASM Bridge: vyutils/crates/vyasa-wasm              │  │
-│  │               (compiled to pkg/ with wasm-bindgen)               │  │
+│  │         WASM Bridge: vyutils/crates/vyasa-sanskrit-wasm          │  │
+│  │        npm: @project-vyasa/sanskrit-wasm (wasm-bindgen)          │  │
 │  └─────────────────────────────────┬────────────────────────────────┘  │
 │                                    │                                   │
 │  ┌─────────────────────────────────┴────────────────────────────────┐  │
@@ -56,24 +56,24 @@ Create a web-based, browser-first Sanskrit Linguistic & Recitation Studio runnin
 ```
 
 > [!IMPORTANT]
-> **No New Repository Needed!**  
-> `vyasa-wasm` is NOT a separate Git repository. It is simply a lightweight library crate inside the existing `vyutils` workspace (`crates/vyasa-wasm`). It compiles into `.wasm` + `.js` bindings in `crates/vyasa-wasm/pkg/`, which `vyasa-apps` imports directly. No new repositories in `project-vyasa/` are created.
+> **No New Repository Needed! Specific NPM Scope: `@project-vyasa/sanskrit-wasm`**  
+> `vyasa-sanskrit-wasm` is NOT a separate Git repository. It is simply a lightweight library crate inside the existing `vyutils` workspace (`crates/vyasa-sanskrit-wasm`). It bundles only the three Sanskrit linguistic crates (`vyasa-phonetics`, `vyasa-lipi`, `vyasa-patha`), distinguishing it from other Vyasa WASM components. It compiles into `.wasm` + `.js` bindings in `crates/vyasa-sanskrit-wasm/pkg/` under the scoped package name `@project-vyasa/sanskrit-wasm`. No new repositories in `project-vyasa/` are created.
 
 ---
 
-## 2. WebAssembly Bridge Layer (`crates/vyasa-wasm`)
+## 2. WebAssembly Bridge Layer (`crates/vyasa-sanskrit-wasm`)
 
-To power the Svelte components in `vyasa-apps`, we build a thin WASM facade crate inside `vyutils`: `crates/vyasa-wasm`.
-It links directly via relative path dependencies to its sibling crates in `vyutils`.
+To power the Svelte components in `vyasa-apps`, we build a thin WASM facade crate inside `vyutils`: `crates/vyasa-sanskrit-wasm`.
+It links directly via relative path dependencies to its 3 sibling Sanskrit crates in `vyutils`.
 
-### 2.1 Crate Definition: `crates/vyasa-wasm/Cargo.toml`
+### 2.1 Crate Definition: `crates/vyasa-sanskrit-wasm/Cargo.toml`
 ```toml
 [package]
-name = "vyasa-wasm"
+name = "vyasa-sanskrit-wasm"
 version = "0.1.0"
 edition = "2024"
 authors = ["Project Vyasa Core Team"]
-description = "WebAssembly bindings for Vyasa Sanskrit linguistic engines"
+description = "WebAssembly bindings for Vyasa Sanskrit linguistic engines (phonetics, lipi, patha)"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -92,7 +92,7 @@ opt-level = "s"
 lto = true
 ```
 
-### 2.2 Core Rust WASM Bindings: `crates/vyasa-wasm/src/lib.rs`
+### 2.2 Core Rust WASM Bindings: `crates/vyasa-sanskrit-wasm/src/lib.rs`
 ```rust
 use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
@@ -192,21 +192,21 @@ fn parse_patha_script(s: &str) -> Result<PathaScript, JsValue> {
 ### 2.3 WASM Build & Packaging Workflow
 The WASM build runs entirely inside `vyutils`:
 ```bash
-cd /Users/anand/Projects/project-vyasa/vyutils/crates/vyasa-wasm
-wasm-pack build --target web
+cd /Users/anand/Projects/project-vyasa/vyutils/crates/vyasa-sanskrit-wasm
+wasm-pack build --target web --scope project-vyasa
 ```
-This produces `crates/vyasa-wasm/pkg/` containing:
-- `vyasa_wasm_bg.wasm` (compiled binary)
-- `vyasa_wasm.js` (JavaScript glue)
-- `vyasa_wasm.d.ts` (TypeScript types)
-- `package.json`
+This produces `crates/vyasa-sanskrit-wasm/pkg/` containing:
+- `vyasa_sanskrit_wasm_bg.wasm` (compiled binary)
+- `vyasa_sanskrit_wasm.js` (JavaScript glue)
+- `vyasa_sanskrit_wasm.d.ts` (TypeScript types)
+- `package.json` (with name `"@project-vyasa/sanskrit-wasm"`)
 
 **How `vyasa-apps` consumes this (Zero-Repo Setup):**
 In `vyasa-apps/apps/sanskrit-studio/package.json`, reference it directly as a local file dependency:
 ```json
 {
   "dependencies": {
-    "@project-vyasa/vyasa-wasm": "file:../../../../vyutils/crates/vyasa-wasm/pkg"
+    "@project-vyasa/sanskrit-wasm": "file:../../../../vyutils/crates/vyasa-sanskrit-wasm/pkg"
   }
 }
 ```
@@ -702,12 +702,12 @@ ls apps
 ```
 
 ### Step 2: Build WASM Crate in `vyutils`
-Build `crates/vyasa-wasm` directly inside `vyutils` using `wasm-pack`:
+Build `crates/vyasa-sanskrit-wasm` directly inside `vyutils` using `wasm-pack`:
 ```bash
-cd /Users/anand/Projects/project-vyasa/vyutils/crates/vyasa-wasm
-wasm-pack build --target web
+cd /Users/anand/Projects/project-vyasa/vyutils/crates/vyasa-sanskrit-wasm
+wasm-pack build --target web --scope project-vyasa
 ```
-This produces `crates/vyasa-wasm/pkg`. In `vyasa-apps/apps/sanskrit-studio`, simply reference `file:../../../../vyutils/crates/vyasa-wasm/pkg` in `package.json` or import from it directly. No extra repository is created.
+This produces `crates/vyasa-sanskrit-wasm/pkg` with the npm package name `@project-vyasa/sanskrit-wasm`. In `vyasa-apps/apps/sanskrit-studio`, simply reference `file:../../../../vyutils/crates/vyasa-sanskrit-wasm/pkg` in `package.json` or import from it directly. No extra repository is created.
 
 ### Step 3: Scaffold `apps/sanskrit-studio`
 ```bash

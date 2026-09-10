@@ -8,6 +8,7 @@ members = [
     "crates/vyasa-phonetics",
     "crates/vyasa-lipi",
     "crates/vyasa-patha",
+    "crates/vyasa-sanskrit-wasm",
 ]
 
 [workspace.package]

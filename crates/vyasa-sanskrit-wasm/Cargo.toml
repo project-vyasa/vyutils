@@ -1,0 +1,20 @@
+[package]
+name = "vyasa-sanskrit-wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors = ["Project Vyasa Core Team"]
+description = "WebAssembly bindings for Vyasa Sanskrit linguistic engines (phonetics, lipi, patha)"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+
+vyasa-phonetics = { path = "../vyasa-phonetics" }
+vyasa-lipi = { path = "../vyasa-lipi" }
+vyasa-patha = { path = "../vyasa-patha" }
