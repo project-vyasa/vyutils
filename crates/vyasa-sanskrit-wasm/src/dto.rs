@@ -33,6 +33,19 @@ pub struct KramaStepDto {
     pub pragrhya_detected: bool,
 }
 
+/// A step in a Jaṭā-pāṭha recitation sequence.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct JataStepDto {
+    pub step_number: usize,
+    pub formula: String,
+    pub first_index: usize,
+    pub second_index: Option<usize>,
+    pub forward_text: String,
+    pub reverse_text: String,
+    pub sandhied: String,
+    pub is_parigraha: bool,
+}
+
 /// A single Śiva Sūtra (Māheśvara Sūtra) with its sounds and terminating it-marker.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct ShivaSutraDto {

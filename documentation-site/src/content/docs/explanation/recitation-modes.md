@@ -1,6 +1,6 @@
 ---
 title: Vedic Recitation Modes
-description: Educational explanation of Prakṛti and Vikṛti recitation pāṭhas, Krama permutations, Pragṛhya sandhi immunity, and Parigraha formatting.
+description: Educational explanation of Prakṛti and Vikṛti recitation pāṭhas, Krama and Jaṭā permutations, reverse sandhi, Abhinihita avagraha elision, Pragṛhya immunity, and Parigraha formatting.
 ---
 
 For over three millennia, the Vedic textual corpus—comprising tens of thousands of verses across the Ṛgveda, Yajurveda, Sāmaveda, and Atharvaveda—was transmitted entirely by oral tradition without the loss of a single syllable, vowel quantity, or pitch accent (*svara*).
@@ -183,33 +183,123 @@ In Vedic tradition, the half-verse pause daṇḍa (`।`) marks a strict caesur
 
 ## 6. The Eight Vikṛti Pāṭhas
 
-With Krama pairs established, the eight Vikṛti recitations permute the sequence through forward, reverse, and interwoven patterns:
+With Krama pairs established, the ancient ṛṣis designed eight intricate permutation modes known as the **Vikṛti Pāṭhas** (*aṣṭau vikṛtayaḥ*), commemorated in the classical verse:
+
+> जटा माला शिखा रेखा ध्वजो दण्डो रथो घनः ।  
+> अष्टौ विकृतयः प्रोक्ताः क्रमपूर्वा महर्षिभिः ॥  
+> (*jaṭā mālā śikhā rekhā dhvajo daṇḍo ratho ghanaḥ |*  
+> *aṣṭau vikṛtayaḥ proktāḥ kramapūrvā maharṣibhiḥ ||*)
+
+These eight modes progressively permute the sequence through forward, reverse, interwoven, and cross-hemistich patterns:
 
 1. **Jaṭā-pāṭha** ("Matted hair"):
-   - Pattern: 1-2, 2-1, 1-2 | 2-3, 3-2, 2-3 ...
-   - Chants every pair forward, backward, and forward again.
+   - Step formula: $1\text{-}2,\; 2\text{-}1,\; 1\text{-}2 \quad\mid\quad 2\text{-}3,\; 3\text{-}2,\; 2\text{-}3 \dots$
+   - Permutes every adjacent pair forward, reverse, and forward again.
 2. **Mālā-pāṭha** ("Garland"):
-   - Woven chain linking odd and even padas across the verse.
-3. **Śikhā-pāṭha** ("Tuft"):
-   - Pattern: 1-2, 2-1, 1-2-3 | 2-3, 3-2, 2-3-4 ...
-4. **Rekhā-pāṭha** ("Streak"):
-   - Triangular stepping across triples and triplets.
+   - Interweaves odd and even padas across the verse in forward and backward garlands.
+3. **Śikhā-pāṭha** ("Crown Tuft"):
+   - Step formula: $1\text{-}2,\; 2\text{-}1,\; 1\text{-}2\text{-}3 \quad\mid\quad 2\text{-}3,\; 3\text{-}2,\; 2\text{-}3\text{-}4 \dots$
+4. **Rekhā-pāṭha** ("Streak / Linear"):
+   - Stepping pairs across triangular progressive steps.
 5. **Dhvaja-pāṭha** ("Banner"):
-   - Links the first padas directly with the terminal padas.
+   - Links the first padas directly with terminal padas from the end of the verse.
 6. **Daṇḍa-pāṭha** ("Staff"):
-   - Progressive linear chaining with reverse echo.
+   - Progressive linear chaining with cumulative reverse echo ($1\text{-}2,\; 2\text{-}1,\; 1\text{-}2\text{-}3,\; 3\text{-}2\text{-}1 \dots$).
 7. **Ratha-pāṭha** ("Chariot"):
-   - Cross-hemistich wheels pairing quarter-verses.
-8. **Ghana-pāṭha** ("Bell" or "Dense"):
-   - The most intricate and revered Vedic recitation mode:
-   - Pattern:
-     > 1-2, 2-1, 1-2-3, 3-2-1, 1-2-3 | 2-3, 3-2, 2-3-4, 4-3-2, 2-3-4 ...
-
-Because `vyasa-patha` produces structured `KramaStep` tokens with parsed padas and exact Sandhi boundaries, higher-order Vikṛti generators (like `vyasa-ghana`) can be layered directly on top of `vyasa-patha`.
+   - Cross-hemistich wheels pairing quarter-verses (*pādas*).
+8. **Ghana-pāṭha** ("Bell / Dense Permutation"):
+   - The supreme status symbol in traditional Vedic scholarship:
+     $$1\text{-}2,\; 2\text{-}1,\; 1\text{-}2\text{-}3,\; 3\text{-}2\text{-}1,\; 1\text{-}2\text{-}3 \quad\mid\quad 2\text{-}3,\; 3\text{-}2,\; 2\text{-}3\text{-}4,\; 4\text{-}3\text{-}2,\; 2\text{-}3\text{-}4$$
+   - A scholar who masters this receives the revered title **Ghanapāṭhin** (घनपाठी).
 
 ---
 
-## 7. Multi-Script Recitation with `vyasa-lipi`
+## 7. Core Permutation Engine
+
+At the computational heart of `vyasa-patha` is the **Core Permutation Engine**. Unlike text templates or naive word joiners, the permutation engine treats Vedic recitations as structured algebraic transformations over a stream of phonologically annotated `Pada` tokens.
+
+```mermaid
+graph TD
+    Input["Raw Pada-pāṭha Input<br/>अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।"] --> Parse["Pada Parser<br/>(Extracts roots, accents, compound hyphens)"]
+    Parse --> Split["Ardharca Splitter<br/>(Strict hemistich isolation at । and ॥)"]
+    Split --> Permute["Permutation Generator<br/>(Krama, Jaṭā, or Ghana state machine)"]
+    Permute --> Sandhi["Sandhi Engine<br/>• Forward Sandhi (1-2)<br/>• Reverse Sandhi (2-1)<br/>• Abhinihita avagraha<br/>• Svarita tone shifts"]
+    Sandhi --> Parigraha["Parigraha Engine<br/>• Compound split (रत्नधात॑ममिति॑ रत्न॒-धात॑मम्)<br/>• Pragṛhya confirmation (हरी इति॑ हरी)<br/>• Terminal verse boundary"]
+    Parigraha --> DTO["Structured Output<br/>JataStep / KramaStep DTOs"]
+```
+
+### Algorithmic Permutation of Jaṭā-pāṭha
+
+For a hemistich containing $n$ padas $(p_1, p_2, \dots, p_n)$:
+
+1. **Pairwise Iteration**: The engine slides a window of size 2 across the sequence:
+   $$\text{Step } i = (p_i, p_{i+1})$$
+2. **Three-Phase Permutation**: For each step, it produces:
+   - **Forward 1-2**: $p_i + p_{i+1}$ (with forward euphonic combination).
+   - **Reverse 2-1**: $p_{i+1} + p_i$ (with reverse euphonic combination).
+   - **Forward Return 1-2**: $p_i + p_{i+1}$ (re-establishing the forward sequence).
+3. **Compound Decomposition (*Samāsa-vigraha*)**:
+   If the second member $p_{i+1}$ is a compound (marked with a hyphen in Pada-pāṭha, e.g., `पु॒रो-हि॑तम्`), traditional recitation mandates an immediate Parigraha clause:
+   $$\text{Unified } + \text{इति॑} + \text{Analytical Split}$$
+4. **Terminal Boundary Parigraha**:
+   When the engine reaches the end of the hemistich (pada $p_n$), it appends a terminal Parigraha clause before the caesura daṇḍa (`।`).
+
+### Full Walkthrough: Ṛgveda 1.1.1 in Jaṭā-pāṭha
+
+Applying the Core Permutation Engine to the opening hemistich of Ṛgveda 1.1.1:
+> **Pada-pāṭha**: `अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।`
+
+| Step | Pair $(p_i, p_{i+1})$ | Components | Generated Jaṭā Text | Phonological Operations |
+|:---:|:---|:---|:---|:---|
+| **Step 1** | $(p_1, p_2)$ = `अ॒ग्निम्` + `ई॒ळे॒` | 1-2: `अ॒ग्निमी॑ळे`<br/>2-1: `ई॒ळे॒ऽग्निम्`<br/>1-2: `अ॒ग्निमी॑ळे` | `अ॒ग्निमी॑ळ ई॒ळे॒ऽग्निर॒ग्निमी॑ळे` | • Forward: $m$ joins vowel; Svarita shift `मी॑` (Pāṇini 8.4.66)<br/>• Reverse: **Abhinihita Sandhi** ($e + a \to e'$ with avagraha `ऽ`, Pāṇini 6.1.109) |
+| **Step 2** | $(p_2, p_3)$ = `ई॒ळे॒` + `पु॒रो-हि॑तम्` | 1-2: `ई॒ळे॒ पु॒रोहि॑तम्`<br/>2-1: `पु॒रोहि॑तमी॑ळे`<br/>1-2: `ई॒ळे॒ पु॒रोहि॑तम्`<br/>**Parigraha**: `पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्` | `ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमी॑ळ ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ।` | • Forward: $e$ before consonant remains stable; compound members unite (`पु॒रोहि॑तम्`)<br/>• Reverse: $m$ joins vowel; Udātta triggers Svarita on `मी॑`<br/>• Parigraha: Split representation after `इति॑` |
+
+Notice that the final output matches the exact oral recitation maintained by Śākala Vedic paṇḍitas for millennia.
+
+---
+
+## 8. Reverse Sandhi & Abhinihita Sandhi
+
+In Prakṛti recitations (Saṃhitā and Krama), sandhi operations are almost entirely **forward**: words appear in their natural chronological order ($1\text{-}2, 2\text{-}3 \dots$).
+
+In Vikṛti recitations (beginning with Jaṭā-pāṭha), words are inverted into **reverse order** ($2\text{-}1$). This creates novel phonetic collisions that never exist in the natural Saṃhitā text. The engine must compute these reverse junctions according to rigorous grammatical rules.
+
+### A. Abhinihita Sandhi (Pāṇini 6.1.109 *eṅaḥ padāntād ati*)
+
+One of the most characteristic reverse sandhi operations occurs when:
+1. The preceding word ($p_2$) ends in a padānta **`ए`** (*e*) or **`ओ`** (*o*).
+2. The following word ($p_1$) begins with a short **`अ`** (*a*).
+
+Under Pāṇini 6.1.109 (*eṅaḥ padāntād ati*), the initial short `अ` undergoes single replacement (*ekādeśa*) and is elided into the preceding `ए`/`ओ`. In writing, this elision is represented by the **avagraha** symbol (`ऽ`):
+
+$$\text{ई॒ळे॒} \;(p_2) \;+\; \text{अ॒ग्निम्} \;(p_1) \;\xrightarrow{\text{Pāṇini 6.1.109}}\; \text{ई॒ळे॒ऽग्निम्}$$
+
+In oral recitation, the vowel is not pronounced as a hiatus; rather, the pitch accent of the elided vowel is absorbed into the preceding diphthong. Without an automated rule engine capable of recognizing padānta *eṅ* and initial short *at*, automated Vikṛti tools produce corrupt strings like `*ईळेअग्निम्`.
+
+### B. Accent Inversion and Svarita Induction (Pāṇini 8.4.66)
+
+Reverse sandhi also reverses pitch-accent precedence. Consider Step 2 in reverse ($p_3 + p_2$):
+- $p_3$ is `पु॒रोहि॑तम्` (the syllable `हि॑` carries the primary Udātta; the final syllable `तम्` is dependent).
+- $p_2$ is `ई॒ळे॒` (the initial syllable `ई॒` is Anudātta).
+
+When joined in reverse:
+$$\text{पु॒रोहि॑तम्} \;+\; \text{ई॒ळे॒} \;\longrightarrow\; \text{पु॒रोहि॑तमी॑ळे}$$
+
+Under Pāṇini 8.4.66 (*udāttād anudāttasya svaritaḥ*), because the preceding context carries an Udātta, the following anudātta vowel `ई॒` obligatorily transforms into a **falling Svarita** (`ई॑`), resulting in the accented syllable `मी॑`.
+
+### C. Consonant Assimilation in Reverse Collision
+
+When a word ending in a consonant meets an initial consonant in reverse order, classical sandhi assimilation takes place:
+- **Terminal *m* (*म्*)**:
+  - Before a vowel in reverse order: joins directly (`पु॒रोहि॑तम्` + `ई॒ळे॒` $\to$ `पु॒रोहि॑तमी॑ळे`).
+  - Before a consonant in reverse order: transforms into canonical Anusvāra (`ं`), retaining the syllable's accent marks.
+- **Visarga Shifts**:
+  - Word ending in *-aḥ* before voiced consonant in reverse shifts to *-o* (`-ो`).
+  - Word ending in *-aḥ* before voiceless consonant shifts to sibilant (*ś/ṣ/s*) or remains visarga.
+
+---
+
+## 9. Multi-Script Recitation with `vyasa-lipi`
 
 A critical feature of `vyasa-patha` is script-agnostic generation. Using `vyasa-lipi`, recitations can be generated directly in the native script of any traditional Vedic lineage:
 

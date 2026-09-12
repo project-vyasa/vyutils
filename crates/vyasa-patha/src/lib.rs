@@ -20,6 +20,7 @@ pub mod parigraha;
 pub mod pragrhya;
 pub mod prakriti;
 pub mod sandhi;
+pub mod vikriti;
 
 pub use model::{KramaStep, Pada, PathaMode, PragrhyaType};
 pub use parigraha::{generate_parigraha, VEDIC_ITI};
@@ -29,6 +30,7 @@ pub use prakriti::{
     parse_pada_patha, parse_verse_hemistichs,
 };
 pub use sandhi::apply_forward_sandhi;
+pub use vikriti::{format_jata_patha, generate_jata_for_verse, generate_jata_patha, JataStep};
 
 use alloc::string::String;
 use vyasa_lipi::{transliterate, Script};
@@ -47,13 +49,35 @@ pub fn generate_krama(input_pada_text: &str) -> String {
 
 /// Generates canonical Krama-pāṭha text in a targeted Indic or Roman script.
 pub fn generate_krama_in_script(input_pada_text: &str, target_script: Script) -> String {
-    // Generate in Devanagari first
     let krama_deva = generate_krama(input_pada_text);
 
     if target_script == Script::Devanagari {
         krama_deva
     } else {
         transliterate(&krama_deva, Script::Devanagari, target_script)
+    }
+}
+
+/// Generates canonical Jaṭā-pāṭha text from a raw Pada-pāṭha input string.
+/// Strictly observes Ardharca boundaries when multiple lines are provided.
+pub fn generate_jata(input_pada_text: &str) -> String {
+    let steps = if input_pada_text.contains('\n') {
+        generate_jata_for_verse(input_pada_text)
+    } else {
+        let padas = parse_pada_patha(input_pada_text);
+        generate_jata_patha(&padas)
+    };
+    format_jata_patha(&steps)
+}
+
+/// Generates canonical Jaṭā-pāṭha text in a targeted Indic or Roman script.
+pub fn generate_jata_in_script(input_pada_text: &str, target_script: Script) -> String {
+    let jata_deva = generate_jata(input_pada_text);
+
+    if target_script == Script::Devanagari {
+        jata_deva
+    } else {
+        transliterate(&jata_deva, Script::Devanagari, target_script)
     }
 }
 

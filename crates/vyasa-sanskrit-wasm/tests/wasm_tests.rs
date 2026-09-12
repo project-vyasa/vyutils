@@ -29,6 +29,17 @@ fn test_krama_generation() {
 }
 
 #[test]
+fn test_jata_generation() {
+    let padas = "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।";
+    let jata_deva = generate_jata_text(padas, "devanagari").unwrap();
+    assert!(jata_deva.contains("अ॒ग्निमी॑ळे ई॒ळे॒ऽग्निम् अ॒ग्निमी॑ळे"));
+    assert!(jata_deva.contains("पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्"));
+
+    let jata_telu = generate_jata_text(padas, "telugu").unwrap();
+    assert!(jata_telu.contains("అ॒గ్నిమీ॑ళే"));
+}
+
+#[test]
 fn test_pratyahara_checks() {
     assert!(check_pratyahara_contains("ac", "a").unwrap());
     assert!(check_pratyahara_contains("ac", "i").unwrap());

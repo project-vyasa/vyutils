@@ -52,9 +52,9 @@ fn main() {
 }
 ```
 
-#### 2. Recitation & Krama-pāṭha (`vyasa-patha`)
+#### 2. Recitation: Krama & Jaṭā (`vyasa-patha`)
 ```rust
-use vyasa_patha::{parse_pada_patha, generate_krama_patha, format_krama_patha, Script};
+use vyasa_patha::{parse_pada_patha, generate_krama_patha, format_krama_patha, generate_jata, Script};
 
 fn main() {
     let pada_text = "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।";
@@ -62,9 +62,14 @@ fn main() {
     
     // Generate Krama steps
     let steps = generate_krama_patha(&padas);
-    let output = format_krama_patha(&steps);
-    println!("{}", output);
+    let krama_output = format_krama_patha(&steps);
+    println!("Krama:\n{}", krama_output);
     // => "अ॒ग्निमी॑ळे । ई॒ळे॒ पु॒रोहि॑तम् । पु॒रो-हि॑तम् । पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ॥"
+
+    // Generate Jaṭā (1-2, 2-1, 1-2 with Abhinihita reverse Sandhi)
+    let jata_output = generate_jata(pada_text);
+    println!("Jaṭā:\n{}", jata_output);
+    // => "अ॒ग्निमी॑ळ ई॒ळे॒ऽग्निर॒ग्निमी॑ळे । ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमी॑ळ ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ।"
 }
 ```
 
@@ -118,7 +123,7 @@ await init();
 
 ## 4. WebAssembly Exported Functions Reference
 
-Below is a complete reference with a dedicated code example for each of the 11 exported functions.
+Below is a complete reference with a dedicated code example for each of the 13 exported functions.
 
 ```typescript
 import init, {
@@ -127,6 +132,8 @@ import init, {
   get_supported_scripts,
   generate_krama,
   generate_krama_text,
+  generate_jata,
+  generate_jata_text,
   parse_padas,
   get_shiva_sutras,
   get_pratyahara_sounds,
@@ -264,7 +271,64 @@ console.log(kramaChant);
 
 ---
 
-### Function 6: `parse_padas`
+### Function 6: `generate_jata`
+
+Generates structured step-by-step Jaṭā recitation data ($1\text{-}2, 2\text{-}1, 1\text{-}2$). Combines forward and reverse Sandhi (including Pāṇini 6.1.109 Abhinihita avagraha elision) with compound and terminal Parigraha clauses.
+
+```typescript
+const jataSteps = generate_jata(
+  "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।",
+  "devanagari" // target script
+);
+
+console.log(jataSteps);
+/* Output:
+[
+  {
+    step_number: 1,
+    formula: "1-2-2-1-1-2",
+    first_index: 1,
+    second_index: 2,
+    forward_12: "अ॒ग्निमी॑ळे",
+    reverse_21: "ई॒ळे॒ऽग्निम्",
+    forward_return_12: "अ॒ग्निमी॑ळे",
+    parigraha: null,
+    full_step_text: "अ॒ग्निमी॑ळ ई॒ळे॒ऽग्निर॒ग्निमी॑ळे"
+  },
+  {
+    step_number: 2,
+    formula: "2-3-3-2-2-3",
+    first_index: 2,
+    second_index: 3,
+    forward_12: "ई॒ळे॒ पु॒रोहि॑तम्",
+    reverse_21: "पु॒रोहि॑तमी॑ळे",
+    forward_return_12: "ई॒ळे॒ पु॒रोहि॑तम्",
+    parigraha: "पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्",
+    full_step_text: "ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमी॑ळ ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्"
+  }
+]
+*/
+```
+
+---
+
+### Function 7: `generate_jata_text`
+
+Generates continuous, traditional Jaṭā-pāṭha recitation text directly in the requested target script.
+
+```typescript
+const jataChant = generate_jata_text(
+  "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।",
+  "devanagari"
+);
+
+console.log(jataChant);
+// Output: "अ॒ग्निमी॑ळ ई॒ळे॒ऽग्निर॒ग्निमी॑ळे । ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमी॑ळ ई॒ळे॒ पु॒रोहि॑तं पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ।"
+```
+
+---
+
+### Function 8: `parse_padas`
 
 Parses raw Pada-pāṭha strings into structured grammatical tokens, identifying compound boundaries (samāsa) and Pāṇinian Pragṛhya vowels (Pāṇini 1.1.11–19).
 
@@ -304,7 +368,7 @@ console.log(padas);
 
 ---
 
-### Function 7: `get_shiva_sutras`
+### Function 9: `get_shiva_sutras`
 
 Returns all 14 Māheśvara Sūtras (Śiva Sūtras) with individual sound tokens and terminating *it*-markers in both Devanagari and IAST.
 
@@ -327,7 +391,7 @@ console.log(sutras[0]);
 
 ---
 
-### Function 8: `get_pratyahara_sounds`
+### Function 10: `get_pratyahara_sounds`
 
 Resolves any canonical Pāṇinian Pratyāhāra (sound abbreviation) into its constituent phonemes with full articulatory properties.
 
@@ -341,7 +405,7 @@ console.log(yanSounds.map(s => s.glyph_iast));
 
 ---
 
-### Function 9: `check_pratyahara_contains`
+### Function 11: `check_pratyahara_contains`
 
 A high-speed boolean predicate checking if a given sound belongs to a Pratyāhāra abbreviation.
 
@@ -361,7 +425,7 @@ console.log(check_pratyahara_contains("yaṇ", "y")); // true
 
 ---
 
-### Function 10: `inspect_varna`
+### Function 12: `inspect_varna`
 
 Computes the classical articulatory phonetics (*Śikṣā* tradition) for any single Sanskrit sound.
 
@@ -385,7 +449,7 @@ console.log(analysis);
 
 ---
 
-### Function 11: `analyze_syllables`
+### Function 13: `analyze_syllables`
 
 Performs syllable-level analysis of an entire Sanskrit word or verse, decomposing each Akṣara into its consonants, vowels, accents, and total mātrā weights.
 

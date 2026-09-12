@@ -128,12 +128,30 @@ use vyasa_lipi::Script;
 let telugu = generate_krama_in_script("अ॒ग्निम् । ई॒ळे॒ ।", Script::Telugu);
 ```
 
+#### `generate_jata(pada_text: &str) -> String`
+Generates continuous Jaṭā-pāṭha text ($1\text{-}2, 2\text{-}1, 1\text{-}2$) in Devanagari with forward and reverse Sandhi.
+
+```rust
+use vyasa_patha::generate_jata;
+
+let jata = generate_jata("अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।");
+```
+
+#### `generate_jata_in_script(pada_text: &str, script: Script) -> String`
+Generates continuous Jaṭā-pāṭha in any target script supported by `vyasa-lipi`.
+
 ---
 
-### 2. Verse-Level & Mid-Level Prakṛti Functions
+### 2. Verse-Level & Mid-Level Prakṛti / Vikṛti Functions
 
 #### `generate_krama_for_verse(pada_verse: &str) -> Vec<KramaStep>`
 Generates complete Krama steps for a multi-hemistich verse. Strictly respects ardharca boundaries (daṇḍa `।` pauses): hemistichs are never chained across `।`, terminal padas before `।` receive Parigraha, and compounds receive Parigraha.
+
+#### `generate_jata_for_verse(pada_verse: &str) -> Vec<JataStep>`
+Generates complete Jaṭā steps for a multi-hemistich verse ($1\text{-}2, 2\text{-}1, 1\text{-}2$), respecting ardharca boundaries and compound Parigrahas.
+
+#### `generate_jata_patha(padas: &[Pada]) -> Vec<JataStep>`
+Permutes a slice of `Pada` elements into canonical `JataStep` tokens with forward and reverse Sandhi.
 
 #### `parse_verse_hemistichs(input: &str) -> Vec<Vec<Pada>>`
 Splits a Pada-pāṭha verse by hemistich daṇḍas (`।` or `॥`) and parses each hemistich into its own `Vec<Pada>`.

@@ -13,7 +13,10 @@ use vyasa_lipi::{
     detect_script as lipi_detect_script, parse_to_tokens, transliterate as lipi_transliterate,
     Script, Token,
 };
-use vyasa_patha::{generate_krama_in_script, generate_krama_patha, parse_pada_patha};
+use vyasa_patha::{
+    generate_jata_in_script, generate_jata_patha, generate_krama_in_script, generate_krama_patha,
+    parse_pada_patha,
+};
 use vyasa_phonetics::panini::ItMarker;
 use vyasa_phonetics::{
     abhyantara_prayatna, is_alpaprana, is_ghosha, matra, sthana, AbhyantaraPrayatna, Consonant,
@@ -195,6 +198,55 @@ pub fn generate_krama(input_pada_text: &str, target_script: &str) -> Result<JsVa
                 sandhied,
                 is_parigraha: step.is_parigraha,
                 pragrhya_detected,
+            }
+        })
+        .collect();
+
+    serde_wasm_bindgen::to_value(&dtos).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// Generates formatted Jaṭā-pāṭha text in the requested script.
+#[wasm_bindgen]
+pub fn generate_jata_text(input_pada_text: &str, target_script: &str) -> Result<String, JsValue> {
+    let script = parse_script(target_script)?;
+    Ok(generate_jata_in_script(input_pada_text, script))
+}
+
+/// Generates step-by-step Jaṭā recitation data structured for Svelte DataGrid and Chanting Trainer.
+#[wasm_bindgen]
+pub fn generate_jata(input_pada_text: &str, target_script: &str) -> Result<JsValue, JsValue> {
+    let script = parse_script(target_script)?;
+    let padas = parse_pada_patha(input_pada_text);
+    let steps = generate_jata_patha(&padas);
+
+    let dtos: Vec<JataStepDto> = steps
+        .into_iter()
+        .map(|step| {
+            let sandhied = if script == Script::Devanagari {
+                step.text
+            } else {
+                lipi_transliterate(&step.text, Script::Devanagari, script)
+            };
+            let fwd = if script == Script::Devanagari {
+                step.forward_text
+            } else {
+                lipi_transliterate(&step.forward_text, Script::Devanagari, script)
+            };
+            let rev = if script == Script::Devanagari {
+                step.reverse_text
+            } else {
+                lipi_transliterate(&step.reverse_text, Script::Devanagari, script)
+            };
+
+            JataStepDto {
+                step_number: step.step_number,
+                formula: step.formula,
+                first_index: step.first_index,
+                second_index: step.second_index,
+                forward_text: fwd,
+                reverse_text: rev,
+                sandhied,
+                is_parigraha: step.is_parigraha,
             }
         })
         .collect();

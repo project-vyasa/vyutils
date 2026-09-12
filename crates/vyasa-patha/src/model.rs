@@ -157,6 +157,10 @@ pub enum PathaMode {
     Pada,
     /// Step-by-step paired recitation: (1-2), (2-3), (3-4)... with terminal iti.
     Krama,
+    /// Forward-backward-forward stepped recitation: (1-2, 2-1, 1-2), (2-3, 3-2, 2-3)...
+    Jata,
+    /// The supreme complex bell-permutation: (1-2, 2-1, 1-2-3, 3-2-1, 1-2-3)...
+    Ghana,
 }
 
 /// A single step in a Krama-pāṭha sequence.

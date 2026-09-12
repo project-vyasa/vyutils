@@ -100,7 +100,19 @@ pub fn apply_forward_sandhi(p1: &Pada, p2: &Pada) -> String {
         }
     }
 
-    // 5. Default: space-separated words
+    // 5. Abhinihita Sandhi (Pāṇini 6.1.109: eṅaḥ padāntād ati)
+    // Word-final 'e' or 'o' + initial short 'a' -> 'e'/'o' + avagraha 'ऽ'
+    // e.g. "ई॒ळे॒" + "अ॒ग्निम्" -> "ई॒ळे॒ऽग्निम्"
+    if w2.starts_with('अ') {
+        let clean_w1_end = w1.trim_end_matches(['\u{0951}', '\u{0952}', '\u{1CDA}']);
+        if clean_w1_end.ends_with('े') || clean_w1_end.ends_with('ो') {
+            let after_a = &w2["अ".len()..];
+            let rem = after_a.trim_start_matches(['\u{0951}', '\u{0952}', '\u{1CDA}']);
+            return format!("{}ऽ{}", w1, rem);
+        }
+    }
+
+    // 6. Default: space-separated words
     format!("{} {}", w1, w2)
 }
 
@@ -229,5 +241,13 @@ mod tests {
         let combined = apply_forward_sandhi(&p1, &p2);
         // m + ṛ -> mṛ
         assert_eq!(combined, "दे॒वमृ॒त्विज॑म्");
+    }
+
+    #[test]
+    fn test_reverse_abhinihita_sandhi() {
+        let p2 = Pada::new("ई॒ळे॒");
+        let p1 = Pada::new("अ॒ग्निम्");
+        let combined = apply_forward_sandhi(&p2, &p1);
+        assert_eq!(combined, "ई॒ळे॒ऽग्निम्");
     }
 }
