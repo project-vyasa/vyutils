@@ -54,6 +54,7 @@ vyutils/
 5. **Turso / libSQL** — only if edge replication becomes a concrete requirement.
 6. **Umbrella binary** — single installable `vyu` dispatching subcommands (optional).
 7. **`cli-tree` crate** — extract `command_tree::render` from `mpt` when a second `[[bin]]` needs `tree`; keep tool-specific clap defs in each crate.
+8. **Font coverage diagnostic** — optional `vyasa-lipi check-font` (or tiny bin) vs a TTF cmap + golden pada; do not put in WASM. See [notes/indic-fonts.md](notes/indic-fonts.md). Docs `custom.css` still omits Malayalam/Bengali/Grantha webfonts.
 
 ---
 

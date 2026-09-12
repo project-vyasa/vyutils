@@ -483,24 +483,24 @@ Here is a complete, production-ready Svelte component using the WASM module:
 
 ## 6. Recommended Unicode Font Stack
 
-To ensure that Vedic pitch accents (like *Anudātta* combining macron below `U+0331`) render crisply without missing-glyph boxes across all browsers, apply this font stack in your CSS:
+The WASM/CLI emit Unicode. Tofu (empty boxes) means the **page never loaded a font that covers that script**, not that Lipi failed. Longer field note in this repo: `notes/indic-fonts.md` (Studio + Starlight incidents, cmap vs Google Fonts slices, whether a coverage CLI is worth it).
+
+**Rule:** every family you list in `font-family` must be installed or fetched (`<link>` / `@font-face`). A CSS name with no file is a no-op. Google Fonts also **slices** WOFF2 by `unicode-range`; Noto Sans Mono’s Latin slice often omits Vedic `U+0331`, so prefer Menlo/Monaco/Courier for monospace IAST pitch.
+
+Load at least: Noto Sans Devanagari, Telugu, Kannada, Malayalam, Bengali, Noto Serif Grantha, and Noto Sans (Latin). Then:
 
 ```css
-/* Sanskrit typography stack */
 .font-sanskrit {
   font-family:
-    /* Indic scripts */
-    "Noto Sans Devanagari", "Noto Sans Telugu", "Noto Serif Grantha", "Noto Sans Kannada",
-    /* Roman IAST */
-    "Noto Sans", "Gentium Plus",
-    sans-serif;
+    "Noto Sans Devanagari", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Serif Grantha",
+    "Noto Sans Malayalam", "Noto Sans Bengali",
+    "Noto Sans", "Gentium Plus", sans-serif;
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
-/* Monospace & combining accents stack */
 .font-sanskrit-mono {
-  font-family:
-    "Menlo", "Monaco", "Courier New",
-    monospace;
+  font-family: Menlo, Monaco, "Courier New", monospace;
 }
 ```
+
+Apply that class (or the same stack on `--font-sans`) to **tables and selects**, not only `<textarea>`. Inter/`system-ui` alone will box Malayalam and Bengali in Chromium.

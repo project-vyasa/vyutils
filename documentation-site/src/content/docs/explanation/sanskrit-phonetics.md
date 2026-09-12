@@ -107,7 +107,7 @@ In the 5th century BCE, Pāṇini formalized Sanskrit phonology in the introduct
 
 Pāṇini defines the construction of phonetic abbreviations in rule 1.1.71:
 
-> **ādir antyena sahetā** (1.1.71)
+> **ādir antyena sahetā** (1.1.71)  
 > *"An initial sound combined with a final marker (it) denotes itself, the intervening sounds, but not the markers."*
 
 This allows any sound set to be described in two characters:
@@ -118,9 +118,12 @@ This allows any sound set to be described in two characters:
 - **`ik`**: from `i` (Sūtra 1) to marker `k` (Sūtra 2) = `{i, u, ṛ, ḷ}`. Crucial for *yaṇ-sandhi* (Pāṇini 6.1.77 *iko yaṇ aci*).
 - **`yaṇ`**: `{y, v, r, l}` (semivowels).
 - **`jaś`**: `{j, b, g, ḍ, d}` (unaspirated voiced stops).
+- **`jhas`**: `{jh, bh, gh, ḍh, dh}` (voiced aspirated stops).
 - **`khar`**: `{kh, ph, ch, ṭh, th, c, ṭ, t, k, p, ś, ṣ, s}` (all unvoiced consonants).
 
-In `vyasa-phonetics`, the `panini` module provides dynamic compile-time and runtime evaluation of all 42+ canonical Pratyāhāras via `evaluate_pratyahara("ik")`.
+In `vyasa-phonetics`, the `panini` module provides zero-allocation static arrays and dynamic evaluation of all canonical Pratyāhāras via `Pratyahara::from_name("ik")`.
+
+*(For the complete mathematical mechanics, sonority hierarchy, the double-h rationale, and the 42-pratyāhāra master table, see the [Appendix](#appendix-deep-pāṇinian-phonological-architecture--implementation-mechanics) below).*
 
 ---
 
@@ -221,7 +224,197 @@ Notice:
 
 ---
 
+## Appendix: Deep Pāṇinian Phonological Architecture & Implementation Mechanics
+
+During the engineering of `crates/vyasa-phonetics/src/panini.rs`, we implemented several profound linguistic conventions established by Pāṇini and elucidated by Patañjali (*Mahābhāṣya*) and Bhaṭṭoji Dīkṣita (*Siddhānta Kaumudī*). These architectural decisions solve subtle edge cases in computational Sanskrit.
+
+---
+
+### Appendix A: The Sonority Hierarchy & Acoustic Ordering Logic
+
+Why are the 14 Śiva Sūtras ordered the way they are? The sequence is not arbitrary; it is an impeccably designed **descending acoustic sonority hierarchy**:
+
+```
+[Sūtras 1–4: Vowels (Svara)]  ──▶  Most Sonorous
+      │  1–2: Simple vowels (Monophthongs: a, i, u, ṛ, ḷ)
+      │  3–4: Complex vowels (Diphthongs: e, o, ai, au)
+      ▼
+[Sūtras 5–6: Semivowels (Antaḥstha)]
+      │  h, y, v, r, l
+      ▼
+[Sūtra 7: Nasals (Anunāsika)]  ──▶  Class 5 Stops (ñ, m, ṅ, ṇ, n)
+      ▼
+[Sūtras 8–9: Voiced Aspirated Stops]  ──▶  Class 4 Stops (jh, bh, gh, ḍh, dh)
+      ▼
+[Sūtra 10: Voiced Unaspirated Stops]  ──▶  Class 3 Stops (j, b, g, ḍ, d)
+      ▼
+[Sūtra 11a: Unvoiced Aspirated Stops]  ──▶  Class 2 Stops (kh, ph, ch, ṭh, th)
+      ▼
+[Sūtra 11b–12: Unvoiced Unaspirated Stops]  ──▶  Class 1 Stops (c, ṭ, t, k, p)
+      ▼
+[Sūtras 13–14: Sibilants & Aspirate (Ūṣman)]  ──▶  Fricatives (ś, ṣ, s, h)
+```
+
+#### Why This Ordering Matters Computationally
+By ordering the phonemes in this reverse-sonority cascade, Pāṇini ensured that every major phonological natural class can be sliced as a **single continuous contiguous subarray** with a single two-character Pratyāhāra:
+- **All voiced consonants**: `haś` (Sūtra 5 to 10) = Semivowels + Class 5 + Class 4 + Class 3.
+- **All stops**: `ñay` (Sūtra 7 to 12) = Class 5 + 4 + 3 + 2 + 1.
+- **All unvoiced consonants**: `khar` (Sūtra 11 to 13) = Class 2 + Class 1 + Sibilants.
+- **All non-nasal, non-semivowel consonants**: `jhal` (Sūtra 8 to 14) = Classes 4 + 3 + 2 + 1 + Fricatives.
+
+In `vyasa-phonetics`, this property allows us to store canonical static slices with zero heap allocations.
+
+---
+
+### Appendix B: The Dual 'ha' Rationale (*Dvir-vacanaṃ Hakārasya*)
+
+A famous question in Sanskrit grammar is: **Why did Pāṇini utter `h` twice**—first in Sūtra 5 (*ha-ya-va-ra-ṭ*) and again in Sūtra 14 (*ha-l*)?
+
+In the *Mahābhāṣya*, Patañjali addresses this directly:
+1. **The Need for `h` in Sūtra 5**:
+   - **Pratyāhāra `aṭ`** (Sūtras 1–5 = vowels + semivowels + h): In rule 8.4.2 (*aṭ-kupv-āṅ-num-vyavāye'pi*), dental *n* becomes retroflex *ṇ* even when intervened by sounds of `aṭ`. If `h` were not in Sūtra 5, words like *hariṇā* or *rohiṇī* would fail to undergo *nati*!
+   - **Pratyāhāra `haś`** (Sūtras 5–10 = voiced consonants): In rule 6.1.114 (*haśi ca*), Visarga preceded by short *a* becomes *u* before a voiced consonant (e.g. *śivaḥ* + *vandyah* ⟶ *śivo vandyaḥ*; *śivaḥ* + *hasati* ⟶ *śivo hasati*). If `h` were not in Sūtra 5, *śivo hasati* would be ungrammatical!
+2. **The Need for `h` in Sūtra 14**:
+   - **Pratyāhāra `śal`** (Sūtras 13–14 = ś, ṣ, s, h): In rule 3.1.45 (*śala igupadhād anitaḥ ksaḥ*), the aorist affix *ksa* applies after roots ending in `śal` (including *duh* ⟶ *adhukṣat*).
+   - **Pratyāhāra `jhal`** (Sūtras 8–14 = all stops and fricatives): In rule 8.2.39 (*jhalaṃ jaśo'nte*), terminal stops and aspirates undergo voicing assimilation to class 3 (e.g. *līh* ⟶ *līḍ*).
+
+Thus, `h` is uttered twice to satisfy independent phonological grouping constraints without violating the contiguous subarray principle.
+
+---
+
+### Appendix C: The Dual 'ṇa' Marker Disambiguation (*Pūrveṇa Pareṇa Vā*)
+
+The 14 Sūtras contain another intentional ambiguity: **the *it*-marker `ṇa` appears twice**:
+- Sūtra 1: *a-i-u-**ṇ**
+- Sūtra 6: *la-**ṇ**
+
+When Pāṇini writes a rule mentioning the Pratyāhāra **`aṇ`** or **`iṇ`**, which `ṇ` is intended?
+
+#### The Pāṇinian Hermeneutic Rule
+The ancient commentators established the canonical resolution rule:
+> **aṇ-grahaṇeṣu pūrveṇa, iṇ-grahaṇe pareṇa**  
+> *"In pratyāhāras starting with 'a', the first ṇa is intended (except in one rule). In pratyāhāras starting with 'i', the second ṇa is intended."*
+
+Specifically:
+1. **Pratyāhāra `aṇ` with the First `ṇ` (Sūtra 1)**:
+   - Contains `{a, i, u}` (3 sounds).
+   - Used in Pāṇini 1.1.69: *aṇudit savarṇasya cāpratyayaḥ*. Here, *aṇ* represents only *a, i, u*.
+2. **Pratyāhāra `aṇ` with the Second `ṇ` (Sūtra 6)**:
+   - Contains `{a, i, u, ṛ, ḷ, e, o, ai, au, h, y, v, r, l}` (14 sounds).
+   - Used in Pāṇini 8.4.57: *aṇo'pragṛhyasyānunāsikaḥ* (nasalization of sentence-final non-pragṛhya vowels and semivowels).
+3. **Pratyāhāra `iṇ` with the Second `ṇ` (Sūtra 6)**:
+   - Contains `{i, u, ṛ, ḷ, e, o, ai, au, h, y, v, r, l}` (13 sounds).
+   - Used in the famous retroflexion rule Pāṇini 8.3.57: *iṇ-koḥ* (*iṇ* sounds and velar stops cause following dental *s* to become *ṣ*).
+
+In `crates/vyasa-phonetics/src/panini.rs`, this is codified through distinct enum variants `ItMarker::Nn1` and `ItMarker::Nn2`.
+
+---
+
+### Appendix D: The Nasalized Vowel Marker and the 'ra' Pratyāhāra
+
+How does Pāṇini refer to the pair of liquids `{r, l}`?
+
+In rule 1.3.2:
+> **upadeśe'janunāsika it** (1.3.2)  
+> *"In the foundational metalanguage (upadeśa), a nasalized vowel is an it-marker."*
+
+In Sūtra 6 (*la-ṇ*), the vowel *a* following *l* is traditionally pronounced **nasalized** (*la~*). Therefore, the *a* in *la* is itself an *it*-marker!
+
+By applying rule 1.1.71 (*ādir antyena sahetā*):
+- The initial sound `r` from Sūtra 5 (*ha-ya-va-**ra**-ṭ*)
+- Combined with the *it*-marker `a~` from Sūtra 6 (*l-**a~**-ṇ*)
+- Yields the unique two-sound Pratyāhāra **`ra`** = `{r, l}`!
+
+This Pratyāhāra is required for rule 1.1.51:
+> **uraṇ raparaḥ** (1.1.51)  
+> *"When a replacement (guṇa or vṛddhi) takes the place of vocalic ṛ, it is followed by r or l."*  
+> (e.g. *kṛ* + *ta* ⟶ *k**ar**ta*; *kḷp* ⟶ *k**al**pate*).
+
+---
+
+### Appendix E: Homogeneity and Representation (*Savarṇa* & *Aṇudit*)
+
+In Pāṇinian grammar, a single letter in a rule does not merely represent a single phonetic realization. It represents an entire family of homogeneous sounds:
+
+> **tulyāsya-prayatnaṃ savarṇam** (1.1.9)  
+> *"Sounds that share identical place of articulation (āsya / sthāna) and internal effort (ābhyantara prayatna) are mutually homogeneous (savarṇa)."*
+
+> **aṇudit savarṇasya cāpratyayaḥ** (1.1.69)  
+> *"Sounds of the aṇ pratyāhāra, and consonants marked with 'u' (udit), represent all their homogeneous varieties."*
+
+#### The 18 Varieties of Vowels
+A single written **`a`** represents $3 \times 3 \times 2 = 18$ distinct varieties:
+- **3 lengths**: *Hrasva* (1 mātrā), *Dīrgha* (2 mātrās), *Pluta* (3 mātrās)
+- **3 pitch accents**: *Udātta* (high), *Anudātta* (low), *Svarita* (circumflex)
+- **2 nasalization states**: *Anunāsika* (nasalized), *Ananunāsika* (un-nasalized)
+
+#### Special Cases
+- **`e, o, ai, au`** (Sandhyakṣara): Lack short (*hrasva*) forms, representing $2 \times 3 \times 2 = 12$ varieties each.
+- **`ḷ`**: Lacks long (*dīrgha*) form in standard usage, representing $2 \times 3 \times 2 = 12$ varieties.
+- **`ṛ` and `ḷ` Homogeneity**: Kātyāyana's famous Vārttika (*ṛkāra-ḷkārayoḥ mithas sāvarṇyaṃ vācyam*) declares that `ṛ` (mūrdhanya) and `ḷ` (dantya) are mutually homogeneous, allowing their union to represent $18 + 12 = 30$ varieties!
+
+---
+
+### Appendix F: The *Udit* Consonant Class Shorthand (*Ku, Cu, Ṭu, Tu, Pu*)
+
+In addition to Pratyāhāras, Pāṇini employs the suffix **`-u`** (*udit*) to denote the five Sparśa consonant vargas:
+
+| Udit Form | Class Name | Consonants Denoted | Articulatory Place |
+|:---:|:---|:---|:---|
+| **ku** | Ka-varga | k, kh, g, gh, ṅ | Kaṇṭha (Velar) |
+| **cu** | Ca-varga | c, ch, j, jh, ñ | Tālu (Palatal) |
+| **ṭu** | Ṭa-varga | ṭ, ṭh, ḍ, ḍh, ṇ | Mūrdhan (Retroflex) |
+| **tu** | Ta-varga | t, th, d, dh, n | Danta (Dental) |
+| **pu** | Pa-varga | p, ph, b, bh, m | Oṣṭha (Labial) |
+
+This enables elegant compound rules such as:
+- **ṣṭunā ṣṭuḥ** (8.4.41): Retroflex assimilation (dental *tu* becomes retroflex *ṭu* before *ṣṭu*).
+- **stoḥ ścunā ścuḥ** (8.4.40): Palatal assimilation (dental *tu* becomes palatal *cu* before *ścu*).
+
+---
+
+### Appendix G: Master Catalog of Canonical Pāṇinian Pratyāhāras
+
+Below is the complete structural catalog of canonical Pratyāhāras used across the *Aṣṭādhyāyī*, codified in `vyasa-phonetics::panini`:
+
+| Pratyāhāra | Bounds (Start $\to$ It) | Count | Sounds Included | Primary Pāṇinian Application |
+|:---|:---|:---:|:---|:---|
+| **`aṇ` (1)** | a $\to$ ṇ (1) | 3 | a, i, u | 1.1.69 Representation rule (*aṇudit savarṇasya*) |
+| **`ak`** | a $\to$ k (2) | 5 | a, i, u, ṛ, ḷ | 6.1.101 Homogeneous long vowel sandhi (*akaḥ savarṇe dīrghaḥ*) |
+| **`ik`** | i $\to$ k (2) | 4 | i, u, ṛ, ḷ | 6.1.77 Semivowel substitution (*iko yaṇ aci*) |
+| **`uk`** | u $\to$ k (2) | 3 | u, ṛ, ḷ | 1.2.11 Morphological ablaut |
+| **`ec`** | e $\to$ c (4) | 4 | e, o, ai, au | 6.1.78 Diphthong sandhi (*eco'yavāyāvaḥ*) |
+| **`aic`** | ai $\to$ c (4) | 2 | ai, au | 1.1.1 Vṛddhi definition (*vṛddhir ādaic*) |
+| **`ac`** | a $\to$ c (4) | 9 | a, i, u, ṛ, ḷ, e, o, ai, au | Complete set of Sanskrit vowels |
+| **`aṭ`** | a $\to$ ṭ (5) | 13 | Vowels + h, y, v, r | 8.4.2 N-retroflexion intervener (*aṭ-kupv-āṅ-num*) |
+| **`aṇ` (2)** | a $\to$ ṇ (6) | 14 | Vowels + h, y, v, r, l | 8.4.57 Final nasalization (*aṇo'pragṛhyasya*) |
+| **`iṇ`** | i $\to$ ṇ (6) | 13 | i, u, ṛ, ḷ, e, o, ai, au, h, y, v, r, l | 8.3.57 S-retroflexion trigger (*iṇ-koḥ*) |
+| **`yaṇ`** | y $\to$ ṇ (6) | 4 | y, v, r, l | 6.1.77 Semivowels (*iko yaṇ aci*) |
+| **`ñam`** | ñ $\to$ m (7) | 5 | ñ, m, ṅ, ṇ, n | 8.3.32 Nasal doubling (*ṅamo hrasvād aci*) |
+| **`ṅam`** | ṅ $\to$ m (7) | 3 | ṅ, ṇ, n | 8.3.32 Terminal nasal gemination |
+| **`jhas`** | jh $\to$ ṣ (9) | 5 | jh, bh, gh, ḍh, dh | Class 4 voiced aspirates |
+| **`bhaṣ`** | bh $\to$ ṣ (9) | 4 | bh, gh, ḍh, dh | Grassman's Law / de-aspiration trigger |
+| **`jhas`** | jh $\to$ ś (10) | 10 | Class 4 + Class 3 stops | 8.4.53 Assimilation conditioning (*jhalaṃ jaś jhasi*) |
+| **`jaś`** | j $\to$ ś (10) | 5 | j, b, g, ḍ, d | 8.2.39 Terminal voicing assimilation (*jhalaṃ jaśo'nte*) |
+| **`baś`** | b $\to$ ś (10) | 4 | b, g, ḍ, d | Bartholomae's Law conditions |
+| **`chav`** | ch $\to$ v (11) | 3 | ch, ṭh, th | Unvoiced aspirates before sibilants |
+| **`khay`** | kh $\to$ y (12) | 10 | Classes 2 + 1 (all unvoiced stops) | Unvoiced stop conditioning |
+| **`cay`** | c $\to$ y (12) | 5 | c, ṭ, t, k, p | Class 1 unvoiced unaspirated stops |
+| **`yay`** | y $\to$ y (12) | 19 | Semivowels + nasals + stops | 8.4.58 Parasavarṇa nasal assimilation |
+| **`may`** | m $\to$ y (12) | 18 | Nasals + stops | 8.4.59 Optional nasal assimilation |
+| **`jhoy`** | jh $\to$ y (12) | 14 | All stops (Classes 4, 3, 2, 1) | 8.4.62 Aspirate elision conditioning |
+| **`khar`** | kh $\to$ r (13) | 13 | Classes 2 + 1 + ś, ṣ, s | 8.4.55 Terminal devoicing (*khari ca*) |
+| **`car`** | c $\to$ r (13) | 8 | Class 1 stops + ś, ṣ, s | 8.4.54 Final devoicing output (*abhyāse carca*) |
+| **`śar`** | ś $\to$ r (13) | 3 | ś, ṣ, s | Sibilants; Visarga assimilation trigger |
+| **`śal`** | ś $\to$ l (14) | 4 | ś, ṣ, s, h | Fricatives / Ūṣman |
+| **`jhal`** | jh $\to$ l (14) | 24 | Stops + Fricatives (Classes 4, 3, 2, 1, sibilants, h) | 8.2.39 Broad consonant assimilation domain |
+| **`hal`** | h $\to$ l (14) | 34 | All 33 consonants (+ duplicated h) | Complete inventory of consonants |
+| **`al`** | a $\to$ l (14) | 43 | All 9 vowels + 34 consonants | Complete Sanskrit phonetic universe |
+
+---
+
 ## Next Steps
 
 - Explore how `vyasa-lipi` uses this phonetic model for multi-script transliteration: **[Vedic Transliteration Explanation](file:///Users/anand/Projects/project-vyasa/vyutils/documentation-site/src/content/docs/explanation/vedic-transliteration.md)**
+- Consult the developer integration guide: **[Sanskrit Developer Guide (Rust & WASM)](file:///Users/anand/Projects/project-vyasa/vyutils/documentation-site/src/content/docs/guides/sanskrit-developer-guide.md)**
 - Review the crate API: **[vyasa-phonetics Reference](file:///Users/anand/Projects/project-vyasa/vyutils/documentation-site/src/content/docs/reference/vyasa-phonetics.md)**

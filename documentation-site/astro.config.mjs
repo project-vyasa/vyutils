@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import mermaid from 'astro-mermaid';
 
 // https://astro.build/config
 // Published at https://project-vyasa.github.io/vyutils/
@@ -41,5 +42,6 @@ export default defineConfig({
 				},
 			],
 		}),
+		mermaid(),
 	],
 });

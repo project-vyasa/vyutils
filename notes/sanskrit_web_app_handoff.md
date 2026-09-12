@@ -649,6 +649,8 @@ Because each component is self-contained and communicates through standard props
 
 ## 5. Typography, Fonts & Unicode Rendering Guide
 
+**Canonical note (Studio + Starlight docs + whether a coverage CLI is worth it):** [`indic-fonts.md`](./indic-fonts.md).
+
 During the implementation in `vyutils`, we diagnosed and solved several subtle font rendering bugs with Indic scripts and Vedic combining characters. Follow these critical guidelines in `vyasa-apps`:
 
 ### 5.1 The Combining Diacritic Font Slicing Gotcha
