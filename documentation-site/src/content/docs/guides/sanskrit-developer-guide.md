@@ -64,7 +64,7 @@ fn main() {
     let steps = generate_krama_patha(&padas);
     let output = format_krama_patha(&steps);
     println!("{}", output);
-    // => "अ॒ग्निमी॒ळे॒ । ई॒ळे॒ पु॒रो-हि॑तम् । पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ॥"
+    // => "अ॒ग्निमी॑ळे । ई॒ळे॒ पु॒रोहि॑तम् । पु॒रो-हि॑तम् । पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ॥"
 }
 ```
 
@@ -481,7 +481,56 @@ Here is a complete, production-ready Svelte component using the WASM module:
 
 ---
 
-## 6. Recommended Unicode Font Stack
+## 6. Data-Driven Test Harness & Regression Suite
+
+To ensure absolute fidelity to traditional Vedic recitation without continually modifying Rust test files when new verses are added, `vyasa-patha` includes a **data-driven test harness** (`crates/vyasa-patha/tests/data_driven_krama.rs`).
+
+### Architecture: Everyday Regression vs. Pre-Release Verification
+
+```text
+Test Harness Architecture
+├── Everyday Regression Suite (<1 ms)
+│   └── crates/vyasa-patha/tests/data/rv_01_001.json
+│       ├── Standalone bundled dataset (all 9 ṛks of Sūkta 1.1)
+│       ├── Validates Pada parsing, Svarita shift, Ardharca limits, and Parigraha
+│       └── Runs unconditionally in CI/CD without local filesystem dependencies
+│
+└── Pre-Release Verification Suite (~10 ms)
+    └── Driven by local data pipeline: sa.wikisource.org/data/processed/rigveda
+        ├── Iterates through full Sūktas (e.g. Mandala 1 Sūktas 001 - 020)
+        ├── Tests hundreds of ṛks and thousands of Krama steps
+        └── Enabled dynamically via environment variables
+```
+
+### 1. Running Everyday Regression Tests
+Run the bundled dataset test (takes ~0.00s):
+```bash
+cargo test -p vyasa-patha --test data_driven_krama
+```
+
+### 2. Running Pre-Release Pipeline Verification
+Prior to a release or significant crate update, run the harness against the comprehensive Wikisource pipeline:
+```bash
+RIGVEDA_PIPELINE_PATH="/Users/anand/Projects/project-vyasa/sa.wikisource.org/data/processed/rigveda" \
+RIGVEDA_SAMPLE_SUKTAS=20 \
+cargo test -p vyasa-patha --test data_driven_krama -- --nocapture
+```
+
+The test runner will output:
+```text
+=== Pre-Release Krama Pipeline Test ===
+Checking pipeline directory: .../processed/rigveda
+Processing Sukta file: .../001_001.json (9 verses)
+Processing Sukta file: .../001_002.json (9 verses)
+Processing Sukta file: .../001_003.json (12 verses)
+Processing Sukta file: .../001_004.json (10 verses)
+Processing Sukta file: .../001_005.json (10 verses)
+✓ Validated 51 ṛks and generated 600+ Krama steps successfully!
+```
+
+---
+
+## 7. Recommended Unicode Font Stack
 
 The WASM/CLI emit Unicode. Tofu (empty boxes) means the **page never loaded a font that covers that script**, not that Lipi failed. Longer field note in this repo: `notes/indic-fonts.md` (Studio + Starlight incidents, cmap vs Google Fonts slices, whether a coverage CLI is worth it).
 

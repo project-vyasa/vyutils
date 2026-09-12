@@ -157,3 +157,23 @@ pub const fn matra(varna: &Varna) -> f32 {
         Varna::Consonant(_) | Varna::Ayogavaha(_) => 0.5,
     }
 }
+
+/// Checks if a consonant is a *Sparśa* (stop/contact consonant, k through m).
+pub const fn is_sparsha(c: Consonant) -> bool {
+    c.varga().is_some()
+}
+
+/// Checks if a consonant is an *Antaḥstha* (semivowel: y, r, l, v).
+pub const fn is_antashtha(c: Consonant) -> bool {
+    c.is_antahstha()
+}
+
+/// Checks if a consonant is an *Ūṣman* (spirant: ś, ṣ, s, h).
+pub const fn is_ushman(c: Consonant) -> bool {
+    c.is_ushman()
+}
+
+/// Checks if a consonant is an *Anunāsika* (nasal stop: ṅ, ñ, ṇ, n, m).
+pub const fn is_anunasika(c: Consonant) -> bool {
+    c.is_nasal()
+}

@@ -13,14 +13,11 @@ use vyasa_lipi::{
     detect_script as lipi_detect_script, parse_to_tokens, transliterate as lipi_transliterate,
     Script, Token,
 };
-use vyasa_patha::{
-    generate_krama_in_script, generate_krama_patha, parse_pada_patha,
-};
+use vyasa_patha::{generate_krama_in_script, generate_krama_patha, parse_pada_patha};
 use vyasa_phonetics::panini::ItMarker;
 use vyasa_phonetics::{
-    abhyantara_prayatna, is_alpaprana, is_ghosha, matra, sthana,
-    AbhyantaraPrayatna, Consonant, Pratyahara, ShivaSutraSound, Sthana, Varna,
-    Vowel, VowelLength, VowelQuality, SHIVA_SUTRAS,
+    abhyantara_prayatna, is_alpaprana, is_ghosha, matra, sthana, AbhyantaraPrayatna, Consonant,
+    Pratyahara, ShivaSutraSound, Sthana, Varna, Vowel, VowelLength, VowelQuality, SHIVA_SUTRAS,
 };
 
 pub mod dto;
@@ -265,23 +262,28 @@ pub fn get_shiva_sutras() -> Result<JsValue, JsValue> {
 #[wasm_bindgen]
 pub fn get_pratyahara_sounds(pratyahara_name: &str) -> Result<JsValue, JsValue> {
     let p = Pratyahara::from_name(pratyahara_name).ok_or_else(|| {
-        JsValue::from_str(&format!("Unknown or unsupported Pratyāhāra: '{}'", pratyahara_name))
+        JsValue::from_str(&format!(
+            "Unknown or unsupported Pratyāhāra: '{}'",
+            pratyahara_name
+        ))
     })?;
 
-    let dtos: Vec<VarnaAnalysisDto> = p
-        .sounds()
-        .iter()
-        .map(|s| varna_dto_from_sound(s))
-        .collect();
+    let dtos: Vec<VarnaAnalysisDto> = p.sounds().iter().map(|s| varna_dto_from_sound(s)).collect();
 
     serde_wasm_bindgen::to_value(&dtos).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 /// Checks if a sound is contained within a Pāṇinian Pratyāhāra.
 #[wasm_bindgen]
-pub fn check_pratyahara_contains(pratyahara_name: &str, sound_symbol: &str) -> Result<bool, JsValue> {
+pub fn check_pratyahara_contains(
+    pratyahara_name: &str,
+    sound_symbol: &str,
+) -> Result<bool, JsValue> {
     let p = Pratyahara::from_name(pratyahara_name).ok_or_else(|| {
-        JsValue::from_str(&format!("Unknown or unsupported Pratyāhāra: '{}'", pratyahara_name))
+        JsValue::from_str(&format!(
+            "Unknown or unsupported Pratyāhāra: '{}'",
+            pratyahara_name
+        ))
     })?;
 
     let sound = sound_from_symbol(sound_symbol).ok_or_else(|| {
@@ -317,7 +319,12 @@ pub fn analyze_syllables(text: &str, script_name: &str) -> Result<JsValue, JsVal
 
             for c in &akshara.consonants {
                 let varna = Varna::Consonant(*c);
-                let dto = varna_dto_from_varna(&varna, &consonant_to_glyphs(c).0, &consonant_to_glyphs(c).1, "consonant");
+                let dto = varna_dto_from_varna(
+                    &varna,
+                    &consonant_to_glyphs(c).0,
+                    &consonant_to_glyphs(c).1,
+                    "consonant",
+                );
                 total_m += dto.matra;
                 cons_dtos.push(dto);
             }
@@ -337,8 +344,15 @@ pub fn analyze_syllables(text: &str, script_name: &str) -> Result<JsValue, JsVal
 
             let surface = format!(
                 "{}{}",
-                cons_dtos.iter().map(|c| c.glyph_deva.as_str()).collect::<Vec<_>>().join(""),
-                vowel_dto.as_ref().map(|v| v.glyph_deva.as_str()).unwrap_or("")
+                cons_dtos
+                    .iter()
+                    .map(|c| c.glyph_deva.as_str())
+                    .collect::<Vec<_>>()
+                    .join(""),
+                vowel_dto
+                    .as_ref()
+                    .map(|v| v.glyph_deva.as_str())
+                    .unwrap_or("")
             );
 
             dtos.push(AksharaAnalysisDto {
@@ -390,8 +404,16 @@ fn abhyantara_to_str(a: AbhyantaraPrayatna) -> &'static str {
     }
 }
 
-fn varna_dto_from_varna(varna: &Varna, deva: &str, iast: &str, varna_type: &str) -> VarnaAnalysisDto {
-    let sthana_names: Vec<String> = sthana(varna).iter().map(|&s| sthana_to_str(s).to_string()).collect();
+fn varna_dto_from_varna(
+    varna: &Varna,
+    deva: &str,
+    iast: &str,
+    varna_type: &str,
+) -> VarnaAnalysisDto {
+    let sthana_names: Vec<String> = sthana(varna)
+        .iter()
+        .map(|&s| sthana_to_str(s).to_string())
+        .collect();
     let abhyantara = abhyantara_to_str(abhyantara_prayatna(varna)).to_string();
     let ghosha = is_ghosha(varna);
     let alpaprana = match varna {

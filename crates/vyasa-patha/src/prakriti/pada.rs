@@ -1,8 +1,8 @@
 //! Pada-pāṭha parser and tokenizer.
 
+use crate::model::Pada;
 use alloc::string::String;
 use alloc::vec::Vec;
-use crate::model::Pada;
 
 /// Parses a raw string of Padas (separated by '।', '॥', or whitespace) into structured Pada tokens.
 pub fn parse_pada_patha(input: &str) -> Vec<Pada> {
@@ -17,6 +17,30 @@ pub fn parse_pada_patha(input: &str) -> Vec<Pada> {
     }
 
     padas
+}
+
+/// Parses a full verse text into its constituent hemistichs (ardharcas).
+/// Each non-empty line (or segment ending with ardharca pause) is parsed into a list of Padas.
+pub fn parse_verse_hemistichs(input: &str) -> Vec<Vec<Pada>> {
+    let mut hemistichs = Vec::new();
+
+    // Check if input contains line breaks (standard in pipeline and digital corpora)
+    if input.contains('\n') {
+        for line in input.lines() {
+            let padas = parse_pada_patha(line);
+            if !padas.is_empty() {
+                hemistichs.push(padas);
+            }
+        }
+    } else {
+        // Single-line input
+        let padas = parse_pada_patha(input);
+        if !padas.is_empty() {
+            hemistichs.push(padas);
+        }
+    }
+
+    hemistichs
 }
 
 /// Formats a list of Padas back into canonical Pada-pāṭha notation.

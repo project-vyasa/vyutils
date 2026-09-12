@@ -20,12 +20,12 @@ fn test_transliterate_and_detection() {
 fn test_krama_generation() {
     let padas = "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।";
     let krama_text = generate_krama_text(padas, "devanagari").unwrap();
-    assert!(krama_text.contains("अ॒ग्निमी॒ळे॒"));
-    assert!(krama_text.contains("ई॒ळे॒ पु॒रो-हि॑तम्"));
-    assert!(krama_text.contains("पु॒रोहि॑तमिति॑"));
+    assert!(krama_text.contains("अ॒ग्निमी॑ळे"));
+    assert!(krama_text.contains("ई॒ळे॒ पु॒रोहि॑तम्"));
+    assert!(krama_text.contains("पु॒रो-हि॑तम्"));
 
     let krama_telu = generate_krama_text(padas, "telugu").unwrap();
-    assert!(krama_telu.contains("అ॒గ్నిమీ॒ళే॒"));
+    assert!(krama_telu.contains("అ॒గ్నిమీ॑ళే"));
 }
 
 #[test]

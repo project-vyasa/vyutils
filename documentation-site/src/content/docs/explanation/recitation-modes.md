@@ -58,14 +58,18 @@ The **Krama-pāṭha** ("step recitation") is the vital bridge between Prakṛti
 Every internal word is recited exactly twice: first as the second member of a pair, then as the first member of the subsequent pair. This overlapping chain makes it impossible to drop, insert, or transpose a single word without breaking the recitation chain.
 
 ```text
-Step 1: (1-2)  अ॒ग्निमी॒ळे॒
-Step 2: (2-3)  ई॒ळे॒ पु॒रो-हि॑तम्
-Step 3: (3-4)  पु॒रो-हि॑तं य॒ज्ञस्य॑
-Step 4: (4-5)  य॒ज्ञस्य॑ दे॒वम्
-Step 5: (5-6)  दे॒वमृ॒त्विज॑म्
-Step 6: (6-7)  ऋ॒त्विजं॑ होता॑रम्
-Step 7: (7-8)  होता॑रं रत्न॒-धात॑मम्
-Step 8: (8)    रत्न॒धात॑ममिति॑ रत्न॒-धात॑मम्
+Hemistich 1:
+Step 1: (1-2)    अ॒ग्निमी॑ळे
+Step 2: (2-3)    ई॒ळे॒ पु॒रोहि॑तम्
+Step 3: (3-Par)  पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्
+Step 4: (3-4)    पु॒रोहि॑तं य॒ज्ञस्य॑
+Step 5: (4-5)    य॒ज्ञस्य॑ दे॒वम्
+Step 6: (5-6)    दे॒वमृ॒त्विज॑म्
+Step 7: (6-Par)  ऋ॒त्विज॒मित्यृ॒त्विज॑म् ।
+
+Hemistich 2:
+Step 8: (7-8)    होता॑रं रत्न॒धात॑मम्
+Step 9: (8-Par)  रत्न॒धात॑ममिति॑ रत्न॒-धात॑मम् ॥
 ```
 
 ---
@@ -126,21 +130,54 @@ Whenever a Pragṛhya pada appears in Krama-pāṭha, it is followed by a Parigr
 
 ---
 
-## 5. Forward Vedic Sandhi in Recitation
+## 5. Vedic Phonology & Sandhi in Recitation
 
-When adjacent padas are paired in Krama (1-2, 2-3 ...), forward sandhi rules apply between them:
+When adjacent padas are paired in Krama (1-2, 2-3 ...), authentic Vedic recitation requires strict adherence to three traditional phonological principles governed by Pāṇini and the *Ṛgveda-Prātiśākhya*:
 
-1. **Terminal *m* (*म्*) Assimilation**:
-   - Before a vowel: merges into the syllable (*m* + vowel → *m*-vowel).
-     - Example: `अ॒ग्निम्` + `ई॒ळे॒` → `अ॒ग्निमी॒ळे॒`
-   - Before a consonant: converts to Anusvāra (`ं`).
-     - Example: `ऋ॒त्विज॑म्` + `होता॑रम्` → `ऋ॒त्विजं॑ होता॑रम्`
-   - **Unicode Mark Ordering**: In Unicode Devanagari encoding, the Anusvāra `\u0902` must strictly precede pitch accents (`\u0951` Svarita, `\u0952` Anudatta). `vyasa-patha` automatically maintains correct Unicode combining sequences.
+### A. The Svarita Accent Shift (Pāṇini 8.4.66 & 8.4.67)
 
-2. **Visarga Transformations**:
-   - *aḥ* before voiced consonants: shifts to *o* (`-ो`).
-   - *aḥ* before *a-*: shifts to *o* with avagraha (`-ोऽ`).
-   - *āḥ* before voiced sounds: visarga drops (`-ा`).
+In Vedic Sanskrit, pitch accents interact across word boundaries:
+- **Udātta (High Pitch)**: Unmarked in standard Ṛgveda Devanagari typography.
+- **Anudātta (Low Pitch)**: Marked with an under-stroke (`॒`, U+0952).
+- **Svarita (Falling Pitch)**: Marked with an upper-stroke (`॑`, U+0951).
+
+1. **Pāṇini 8.4.66 (*udāttād anudāttasya svaritaḥ*)**:
+   An *anudātta* syllable immediately following an *udātta* syllable obligatorily shifts into a *svarita*.
+   In Pada 1 (`अ॒ग्निम्`), the syllable `ग्नि` is udātta. When joined with Pada 2 (`ई॒ळे॒`), whose initial syllable `ई॒` is anudātta, the resulting merged syllable `मी` shifts to svarita:
+   $$\text{अ॒ग्निम्} + \text{ई॒ळे॒} \longrightarrow \text{अ॒ग्निमी॑ळे}$$
+   *(Notice that `मी॑` acquires the svarita mark, and `ळे॒` remains anudātta).*
+
+2. **Pāṇini 8.4.67 (*nodātta-svaritodātta-pade*) Exception**:
+   If the following syllable in the second word already contains an *udātta* or independent *svarita*, the shift does **not** take place; the preceding syllable remains anudātta (termed *anudāttatara*):
+   $$\text{दे॒वम्} + \text{ऋ॒त्विज॑म्} \longrightarrow \text{दे॒वमृ॒त्विज॑म्}$$
+   Here, because `ज॑` in `ऋ॒त्विज॑म्` carries an accent, `मृ॒` does not shift to svarita.
+
+### B. The Ardharca (Hemistich) Boundary Rule
+
+In Vedic tradition, the half-verse pause daṇḍa (`।`) marks a strict caesura and syntactic division:
+- **No Cross-Hemistich Chaining**: The final pada of a hemistich (`ऋ॒त्विज॑म्`) is **never** chained across the `।` into the first pada of the second hemistich (`होता॑रम्`).
+- **Enclosing Parigraha**: The final pada of Hemistich 1 is sealed with Parigraha (`ऋ॒त्विज॒मित्यृ॒त्विज॑म् ।`).
+- **Fresh Hemistich Initialization**: Hemistich 2 begins a new independent chain with Pair (7-8): `होता॑रं रत्न॒धात॑मम्`.
+
+### C. Compound Representation (*Samāsa*)
+
+- In **Pada-pāṭha**, compound members are divided by a hyphen or avagraha to assist grammatical analysis (`पु॒रो-हि॑तम्`, `रत्न॒-धात॑मम्`).
+- In **Krama-pāṭha**, paired steps present the compound in its unified, natural sandhi form (`ई॒ळे॒ पु॒रोहि॑तम्`, `पु॒रोहि॑तं य॒ज्ञस्य॑`).
+- The internal analytical hyphen is preserved exclusively during the **Parigraha** clause:
+  $$\text{पु॒रो-हि॑तम्} \implies \text{पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्}$$
+
+### D. Terminal *m* (*म्*) Assimilation & Visarga Rules
+
+1. **Terminal *m***:
+   - Before vowels: joins directly without nasal mark (`अ॒ग्निम्` + `ई॒ळे॒` $\to$ `अ॒ग्निमी॑ळे`).
+   - Before consonants: converts to Anusvāra (`ं`) while retaining the syllable's underlying accent (`ऋ॒त्विज॑म्` + `होता॑रम्` $\to$ `ऋ॒त्विजं॑ होता॑रम्`).
+   - **Unicode Canonical Sequence**: In Devanagari, the Anusvāra `\u0902` strictly precedes pitch accents (`\u0951` Svarita, `\u0952` Anudatta). `vyasa-patha` automatically generates the canonical Unicode sequence.
+
+2. **Visarga and Pronoun Sandhi**:
+   - *aḥ* before voiced consonants shifts to *o* (`-ो`).
+   - *aḥ* before *a-* shifts to *o* with avagraha (`-ोऽ`).
+   - *āḥ* before voiced sounds drops the visarga (`-ा`).
+   - Pronoun `सः` (*saḥ*) obligatorily drops visarga before any consonant (Pāṇini 6.1.132 *eta-tadoḥ sulopo 'kor anañ-sve hali*): `सः` + `पवस्व` $\to$ `स पवस्व`.
 
 ---
 
@@ -183,15 +220,15 @@ vyasa-patha "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-�
 
 Output:
 ```text
-అ॒గ్నిమీ॒ళే॒ । ఈ॒ళే॒ పు॒రో-హి॑తమ్ । పు॒రోహి॑తమితి॑ పు॒రో-హి॑తమ్ ॥
+అ॒గ్నిమీ॑ళే । ఈ॒ళే॒ పు॒रोహితమ్ । పు॒రో-హితమ్ । పు॒రోహితమితి॑ పు॒రోహితమ్ ॥
 ```
 
 Or in Kannada script:
 ```text
-ಅ॒ಗ್ನಿಮೀ॒ಳೇ॒ । ಈ॒ಳೇ॒ ಪು॒ರೋ-ಹಿ॑ತಮ್ । ಪು॒ರೋಹಿ॑ತಮಿತಿ॑ ಪು॒ರೋ-ಹಿ॑ತಮ್ ॥
+ಅ॒ಗ್ನಿಮೀ॑ಳೇ । ಈ॒ಳೇ॒ పు॒ರೋಹಿತಮ್ । పు॒రో-హితమ్ । పు॒ರೋహితమితి॑ పు॒ರೋహితమ్ ॥
 ```
 
 Or in Academic Roman (IAST):
 ```text
-a̱gnimī̱ḷe̱ | ī̱ḷe̱ pu̱ro-hítam | pu̱rohítamití pu̱ro-hítam ||
+a̱gnimī́ḷe | ī̱ḷe̱ puróhitam | pu̱ro-hítam | puróhitamití pu̱ro-hítam ||
 ```

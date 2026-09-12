@@ -8,9 +8,9 @@
 //! - Visarga sandhi (aḥ + voiced -> o, vowel + ḥ -> r, etc.)
 //! - Vowel sandhi (Savarṇa-dīrgha, Guṇa, Vṛddhi, Yaṇ, Pūrvarūpa)
 
+use crate::model::Pada;
 use alloc::format;
 use alloc::string::String;
-use crate::model::Pada;
 
 /// Applies forward Vedic sandhi to join two adjacent padas `p1` and `p2`.
 pub fn apply_forward_sandhi(p1: &Pada, p2: &Pada) -> String {
@@ -19,8 +19,13 @@ pub fn apply_forward_sandhi(p1: &Pada, p2: &Pada) -> String {
         return format!("{} {}", p1.raw, p2.raw);
     }
 
-    let w1 = &p1.raw;
-    let w2 = &p2.raw;
+    let w1 = p1.unified_raw();
+    let w2 = p2.unified_raw();
+
+    // 1. Pragṛhya Immunity: If p1 is Pragṛhya, sandhi is strictly blocked
+    if p1.is_pragrhya() {
+        return format!("{} {}", w1, w2);
+    }
 
     // 2. Final 'म्' handling (extremely frequent in Vedic verses: Agnim, Devam, Purohitam...)
     if w1.ends_with("म्") {
@@ -29,13 +34,28 @@ pub fn apply_forward_sandhi(p1: &Pada, p2: &Pada) -> String {
 
         if is_vowel_char(first_char_w2) {
             // Merge m + initial vowel:
-            // e.g. base1 + "म" + dependent vowel of w2, followed by remainder of w2
-            let (matra, remainder) = split_initial_vowel(w2);
+            let (matra, remainder) = split_initial_vowel(&w2);
+
+            // Svara Transition: Udātta + Anudātta -> Svarita (Pāṇini 8.4.66 / RPr 3.1)
+            // With exception Pāṇini 8.4.67 (no udātta-svaritodaye):
+            // If the following portion contains an Udātta/Svarita, the syllable remains Anudātta (sannatara).
+            if p1.ends_with_udatta() && remainder.starts_with('\u{0952}') {
+                let rem_after_accent = &remainder['\u{0952}'.len_utf8()..];
+                if !rem_after_accent.contains('\u{0951}') && !rem_after_accent.contains('\u{1CDA}')
+                {
+                    let clean_rem = rem_after_accent.replace('\u{0952}', "");
+                    return format!("{}म{}\u{0951}{}", base1, matra, clean_rem);
+                }
+            }
+
             return format!("{}म{}{}", base1, matra, remainder);
         } else {
             // Before consonant: m becomes Anusvāra 'ं' on preceding character
             // If base1 ends with pitch accents, Anusvāra must precede the pitch accent in Unicode canonical ordering
-            if base1.ends_with('\u{0951}') || base1.ends_with('\u{0952}') || base1.ends_with('\u{1CDA}') {
+            if base1.ends_with('\u{0951}')
+                || base1.ends_with('\u{0952}')
+                || base1.ends_with('\u{1CDA}')
+            {
                 let accent = base1.chars().last().unwrap();
                 let stem = &base1[..base1.len() - accent.len_utf8()];
                 return format!("{}ं{} {}", stem, accent, w2);
@@ -44,7 +64,16 @@ pub fn apply_forward_sandhi(p1: &Pada, p2: &Pada) -> String {
         }
     }
 
-    // 3. Final Visarga 'ः' handling
+    // 3. Special Vedic rule for pronoun 'सः' (Pāṇini 6.1.132: eta-tadoḥ sulopo hali)
+    // Drops visarga before any consonant: e.g. "सः" + "दे॒वान्" -> "स दे॒वान्"
+    if p1.clean == "सः" || w1 == "सः" {
+        let first_char_w2 = w2.chars().next().unwrap_or(' ');
+        if !is_vowel_char(first_char_w2) {
+            return format!("स {}", w2);
+        }
+    }
+
+    // 4. Final Visarga 'ः' handling
     if w1.ends_with('ः') {
         let base1 = &w1[..w1.len() - "ः".len()];
         let first_char_w2 = w2.chars().next().unwrap_or(' ');
@@ -71,7 +100,7 @@ pub fn apply_forward_sandhi(p1: &Pada, p2: &Pada) -> String {
         }
     }
 
-    // 4. Default: space-separated words
+    // 5. Default: space-separated words
     format!("{} {}", w1, w2)
 }
 
@@ -87,12 +116,26 @@ fn is_vowel_char(c: char) -> bool {
 fn is_voiced_consonant(c: char) -> bool {
     matches!(
         c,
-        'ग' | 'घ' | 'ङ'
-            | 'ज' | 'झ' | 'ञ'
-            | 'ड' | 'ढ' | 'ण'
-            | 'द' | 'ध' | 'न'
-            | 'ब' | 'भ' | 'म'
-            | 'य' | 'र' | 'ल' | 'व' | 'ह' | 'ळ'
+        'ग' | 'घ'
+            | 'ङ'
+            | 'ज'
+            | 'झ'
+            | 'ञ'
+            | 'ड'
+            | 'ढ'
+            | 'ण'
+            | 'द'
+            | 'ध'
+            | 'न'
+            | 'ब'
+            | 'भ'
+            | 'म'
+            | 'य'
+            | 'र'
+            | 'ल'
+            | 'व'
+            | 'ह'
+            | 'ळ'
     )
 }
 
@@ -157,8 +200,8 @@ mod tests {
         let p1 = Pada::new("अ॒ग्निम्");
         let p2 = Pada::new("ई॒ळे॒");
         let combined = apply_forward_sandhi(&p1, &p2);
-        // m + ī -> mī
-        assert_eq!(combined, "अ॒ग्निमी॒ळे॒");
+        // m + ī -> mī with Udātta + Anudātta -> Svarita (अ॒ग्निमी॑ळे)
+        assert_eq!(combined, "अ॒ग्निमी॑ळे");
     }
 
     #[test]

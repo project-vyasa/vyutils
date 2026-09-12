@@ -235,6 +235,8 @@ impl Pratyahara {
             "yaṇ" | "yan" | "यण्" => Some(Pratyahara::new("yaṇ", &YAN_SOUNDS)),
             // Voiced unaspirated stops: j, b, g, ḍ, d (जश्)
             "jaś" | "jas" | "जश्" => Some(Pratyahara::new("jaś", &JAS_SOUNDS)),
+            // Voiced aspirated stops: jh, bh, gh, ḍh, dh (झष्)
+            "jhaṣ" | "jhash" | "झष्" => Some(Pratyahara::new("jhaṣ", &JHASH_SOUNDS)),
             // Voiced stops: jh, bh, gh, ḍh, dh, j, b, g, ḍ, d (झश्)
             "jhaś" | "jhas" | "झश्" => Some(Pratyahara::new("jhaś", &JHAS_SOUNDS)),
             // Voiceless consonants (खर्)
@@ -321,6 +323,14 @@ pub static JAS_SOUNDS: [ShivaSutraSound; 5] = [
     ShivaSutraSound::Consonant(Consonant::G),
     ShivaSutraSound::Consonant(Consonant::Dd),
     ShivaSutraSound::Consonant(Consonant::D),
+];
+
+pub static JHASH_SOUNDS: [ShivaSutraSound; 5] = [
+    ShivaSutraSound::Consonant(Consonant::Jh),
+    ShivaSutraSound::Consonant(Consonant::Bh),
+    ShivaSutraSound::Consonant(Consonant::Gh),
+    ShivaSutraSound::Consonant(Consonant::Ddh),
+    ShivaSutraSound::Consonant(Consonant::Dh),
 ];
 
 pub static JHAS_SOUNDS: [ShivaSutraSound; 10] = [

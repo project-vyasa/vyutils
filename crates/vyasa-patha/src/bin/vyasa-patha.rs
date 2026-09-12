@@ -57,7 +57,10 @@ fn main() {
         "krama" => PathaMode::Krama,
         "pada" => PathaMode::Pada,
         _ => {
-            eprintln!("Error: Unsupported mode '{}'. Available: 'krama', 'pada'", cli.mode);
+            eprintln!(
+                "Error: Unsupported mode '{}'. Available: 'krama', 'pada'",
+                cli.mode
+            );
             std::process::exit(1);
         }
     };
@@ -72,15 +75,14 @@ fn main() {
                     let text = if target_script == Script::Devanagari {
                         step.text
                     } else {
-                        vyasa_lipi::transliterate(
-                            &step.text,
-                            Script::Devanagari,
-                            target_script,
-                        )
+                        vyasa_lipi::transliterate(&step.text, Script::Devanagari, target_script)
                     };
 
                     if let Some(sec) = step.second_index {
-                        println!("{}. ({}-{}) {}", step.step_number, step.first_index, sec, text);
+                        println!(
+                            "{}. ({}-{}) {}",
+                            step.step_number, step.first_index, sec, text
+                        );
                     } else {
                         println!("{}. ({}) {}", step.step_number, step.first_index, text);
                     }
@@ -95,11 +97,7 @@ fn main() {
             let text = if target_script == Script::Devanagari {
                 result
             } else {
-                vyasa_lipi::transliterate(
-                    &result,
-                    Script::Devanagari,
-                    target_script,
-                )
+                vyasa_lipi::transliterate(&result, Script::Devanagari, target_script)
             };
             println!("{}", text);
         }

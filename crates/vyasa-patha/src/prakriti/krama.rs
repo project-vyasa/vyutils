@@ -11,11 +11,11 @@
 //! - Forward Vedic Sandhi applied between every pair
 //! - Parigraha ('iti') clauses inserted for Pragṛhya words and the terminal word.
 
-use alloc::string::String;
-use alloc::vec::Vec;
 use crate::model::{KramaStep, Pada};
 use crate::parigraha::generate_parigraha;
 use crate::sandhi::apply_forward_sandhi;
+use alloc::string::String;
+use alloc::vec::Vec;
 
 /// Generates the sequence of Krama steps for a given slice of Padas.
 pub fn generate_krama_patha(padas: &[Pada]) -> Vec<KramaStep> {
@@ -82,6 +82,36 @@ pub fn generate_krama_patha(padas: &[Pada]) -> Vec<KramaStep> {
     steps
 }
 
+/// Generates Krama-pāṭha for an entire verse, respecting Ardharca (hemistich) boundaries.
+/// Krama steps never cross an Ardharca boundary ('।'); each hemistich terminates with Parigraha.
+pub fn generate_krama_for_verse(verse_text: &str) -> Vec<KramaStep> {
+    use crate::prakriti::pada::parse_verse_hemistichs;
+
+    let hemistichs = parse_verse_hemistichs(verse_text);
+    let mut all_steps = Vec::new();
+    let mut step_offset = 1;
+    let mut pada_offset = 1;
+
+    for hemistich in hemistichs {
+        if hemistich.is_empty() {
+            continue;
+        }
+        let h_steps = generate_krama_patha(&hemistich);
+        for mut step in h_steps {
+            step.step_number = step_offset;
+            step.first_index += pada_offset - 1;
+            if let Some(ref mut idx) = step.second_index {
+                *idx += pada_offset - 1;
+            }
+            all_steps.push(step);
+            step_offset += 1;
+        }
+        pada_offset += hemistich.len();
+    }
+
+    all_steps
+}
+
 /// Formats a list of Krama steps into canonical recitation text.
 pub fn format_krama_patha(steps: &[KramaStep]) -> String {
     let mut out = String::new();
@@ -109,17 +139,17 @@ mod tests {
         let steps = generate_krama_patha(&padas);
 
         // Expect:
-        // Step 1: 1-2 (अ॒ग्निमी॑ळे)
-        // Step 2: 2-3 (ई॒ळे॒ पु॒रो-हि॑तम्)
+        // Step 1: 1-2 (अ॒ग्निमी॑ळे) - Udātta + Anudātta -> Svarita
+        // Step 2: 2-3 (ई॒ळे॒ पु॒रोहि॑तम्) - Unified compound without raw hyphens
         // Step 3: Terminal iti on 3 (पु॒रोहि॑तम् इति॑ पु॒रो-हि॑तम्)
         assert_eq!(steps.len(), 3);
         assert_eq!(steps[0].first_index, 1);
         assert_eq!(steps[0].second_index, Some(2));
-        assert_eq!(steps[0].text, "अ॒ग्निमी॒ळे॒");
+        assert_eq!(steps[0].text, "अ॒ग्निमी॑ळे");
 
         assert_eq!(steps[1].first_index, 2);
         assert_eq!(steps[1].second_index, Some(3));
-        assert_eq!(steps[1].text, "ई॒ळे॒ पु॒रो-हि॑तम्");
+        assert_eq!(steps[1].text, "ई॒ळे॒ पु॒रोहि॑तम्");
 
         assert_eq!(steps[2].first_index, 3);
         assert_eq!(steps[2].second_index, None);
@@ -134,9 +164,6 @@ mod tests {
         let steps = generate_krama_patha(&padas);
         let formatted = format_krama_patha(&steps);
 
-        assert_eq!(
-            formatted,
-            "अ॒ग्निमी॒ळे॒ । ई॒ळे॒ इति॑ ई॒ळे॒ ॥"
-        );
+        assert_eq!(formatted, "अ॒ग्निमी॑ळे । ई॒ळे॒ इति॑ ई॒ळे॒ ॥");
     }
 }

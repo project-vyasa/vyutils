@@ -66,12 +66,85 @@ impl Pada {
 
     /// Returns `true` if this pada is a compound word (samāsa).
     pub fn is_compound(&self) -> bool {
-        self.compound_parts.len() > 1
+        self.compound_parts.len() > 1 || self.raw.contains('-') || self.raw.contains('ऽ')
     }
 
     /// Returns `true` if this pada is Pragṛhya.
     pub fn is_pragrhya(&self) -> bool {
         self.pragrhya.is_some()
+    }
+
+    /// Returns the unified surface form with internal compound delimiters resolved.
+    /// E.g. "पु॒रःऽहि॑तम्" -> "पु॒रोहि॑तम्", "पु॒रो-हि॑तम्" -> "पु॒रोहि॑तम्", "र॒त्न॒ऽधात॑मम्" -> "र॒त्न॒धात॑मम्".
+    pub fn unified_raw(&self) -> String {
+        if !self.raw.contains('-') && !self.raw.contains('ऽ') {
+            return self.raw.clone();
+        }
+
+        let delimiter = if self.raw.contains('ऽ') { 'ऽ' } else { '-' };
+        let parts: Vec<&str> = self.raw.split(delimiter).collect();
+        if parts.len() < 2 {
+            return self.raw.replace(['-', 'ऽ'], "");
+        }
+
+        let mut unified = parts[0].to_string();
+        for next_part in &parts[1..] {
+            // If preceding part ends with Visarga before voiced consonant (e.g. "पु॒रः" + "हि॑तम्" -> "पु॒रोहि॑तम्")
+            if unified.ends_with('ः') {
+                let base = &unified[..unified.len() - 'ः'.len_utf8()];
+                unified = format!("{}ो{}", base, next_part);
+                continue;
+            }
+            unified.push_str(next_part);
+        }
+        unified
+    }
+
+    /// Checks if the final syllable of this pada carries an Udātta accent in Ṛgvedic notation.
+    /// (An unmarked vowel preceded by Anudātta or preceding Svarita).
+    pub fn ends_with_udatta(&self) -> bool {
+        let clean_vowels = self.raw.replace(['-', 'ऽ'], "");
+        // If the word ends with Svarita or explicit Anudātta, false
+        let mut chars = clean_vowels.chars().rev();
+        let mut last_accent: Option<char> = None;
+        while let Some(c) = chars.next() {
+            if c == '\u{0951}' || c == '\u{0952}' || c == '\u{1CDA}' {
+                last_accent = Some(c);
+                break;
+            }
+            if c >= 'क' && c <= 'ह' {
+                // If we reach a consonant without seeing an accent, the final syllable has no accent mark
+                break;
+            }
+        }
+
+        // If the final syllable has no mark and word has an earlier Anudātta, it is Udātta (e.g. अ॒ग्निम्, दे॒वम्)
+        if last_accent.is_none() && clean_vowels.contains('\u{0952}') {
+            return true;
+        }
+
+        false
+    }
+
+    /// Checks if the initial vowel of this pada carries an Anudātta accent (`\u{0952}`).
+    pub fn starts_with_anudatta(&self) -> bool {
+        let mut chars = self.raw.chars();
+        while let Some(c) = chars.next() {
+            if c == '\u{0952}' {
+                return true;
+            }
+            if c == '\u{0951}' {
+                return false;
+            }
+            // Once we reach a second consonant/vowel, stop
+            if c >= 'क' && c <= 'ह' {
+                // check if immediately followed by anudatta
+                if let Some(next_c) = chars.next() {
+                    return next_c == '\u{0952}' || chars.next() == Some('\u{0952}');
+                }
+            }
+        }
+        false
     }
 }
 

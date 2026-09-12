@@ -6,9 +6,9 @@
 //! - Compound word: `unified_compound + इति॑ + split_compound`
 //! - Particle 'u': `ऊँ॒ इति॑ उ`
 
+use crate::model::Pada;
 use alloc::format;
 use alloc::string::String;
-use crate::model::Pada;
 
 /// Vedic particle 'iti' with canonical svarita accent on the second syllable.
 pub const VEDIC_ITI: &str = "इति॑";
@@ -61,10 +61,7 @@ mod tests {
     fn test_parigraha_compound() {
         let pada = Pada::new("रत्न॒-धात॑मम्");
         // Unified: रत्न॒धात॑मम् -> base: रत्न॒धात॑म -> + मिति॑ -> रत्न॒धात॑ममिति॑ रत्न॒-धात॑मम्
-        assert_eq!(
-            generate_parigraha(&pada),
-            "रत्न॒धात॑ममिति॑ रत्न॒-धात॑मम्"
-        );
+        assert_eq!(generate_parigraha(&pada), "रत्न॒धात॑ममिति॑ रत्न॒-धात॑मम्");
     }
 
     #[test]

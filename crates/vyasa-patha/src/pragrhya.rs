@@ -9,10 +9,27 @@ use crate::model::PragrhyaType;
 const VEDIC_PRONOUNS: &[&str] = &["अस्मे", "युष्मे", "त्वे", "अमे"];
 
 /// Well-known canonical dual nouns and verb forms frequently appearing in Vedic texts.
-const CANONICAL_DUAL_I: &[&str] = &["हरी", "कवी", "गिरी", "अग्नी", "इन्द्राग्नी", "मित्रावरुणा", "रोदसी"];
+const CANONICAL_DUAL_I: &[&str] = &[
+    "हरी",
+    "कवी",
+    "गिरी",
+    "अग्नी",
+    "इन्द्राग्नी",
+    "मित्रावरुणा",
+    "रोदसी",
+];
 const CANONICAL_DUAL_U: &[&str] = &["विष्णू", "साधू", "बाहू", "वायू", "ऋभू"];
 const CANONICAL_DUAL_E: &[&str] = &[
-    "फले", "गङ्गे", "वने", "नेत्रे", "आसाते", "इयाते", "दम्पती", "उभे", "एते", "ते",
+    "फले",
+    "गङ्गे",
+    "वने",
+    "नेत्रे",
+    "आसाते",
+    "इयाते",
+    "दम्पती",
+    "उभे",
+    "एते",
+    "ते",
 ];
 
 /// Evaluates whether a cleaned Sanskrit word possesses a Pragṛhya ending.

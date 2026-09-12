@@ -25,7 +25,8 @@ pub use model::{KramaStep, Pada, PathaMode, PragrhyaType};
 pub use parigraha::{generate_parigraha, VEDIC_ITI};
 pub use pragrhya::detect_pragrhya;
 pub use prakriti::{
-    format_krama_patha, format_pada_patha, generate_krama_patha, parse_pada_patha,
+    format_krama_patha, format_pada_patha, generate_krama_for_verse, generate_krama_patha,
+    parse_pada_patha, parse_verse_hemistichs,
 };
 pub use sandhi::apply_forward_sandhi;
 
@@ -33,9 +34,14 @@ use alloc::string::String;
 use vyasa_lipi::{transliterate, Script};
 
 /// Generates canonical Krama-pāṭha text from a raw Pada-pāṭha input string.
+/// If input contains multiple hemistich lines, Ardharca boundaries are strictly respected.
 pub fn generate_krama(input_pada_text: &str) -> String {
-    let padas = parse_pada_patha(input_pada_text);
-    let steps = generate_krama_patha(&padas);
+    let steps = if input_pada_text.contains('\n') {
+        generate_krama_for_verse(input_pada_text)
+    } else {
+        let padas = parse_pada_patha(input_pada_text);
+        generate_krama_patha(&padas)
+    };
     format_krama_patha(&steps)
 }
 
@@ -59,16 +65,13 @@ mod tests {
     fn test_high_level_krama_generation() {
         let input = "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-हि॑तम् ।";
         let krama = generate_krama(input);
-        assert_eq!(
-            krama,
-            "अ॒ग्निमी॒ळे॒ । ई॒ळे॒ पु॒रो-हि॑तम् । पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ॥"
-        );
+        assert_eq!(krama, "अ॒ग्निमी॑ळे । ई॒ळे॒ पु॒रोहि॑तम् । पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् ॥");
     }
 
     #[test]
     fn test_krama_in_telugu_script() {
         let input = "अ॒ग्निम् । ई॒ळे॒ ।";
         let krama_telu = generate_krama_in_script(input, Script::Telugu);
-        assert_eq!(krama_telu, "అ॒గ్నిమీ॒ళే॒ । ఈ॒ళే॒ ఇతి॑ ఈ॒ళే॒ ॥");
+        assert_eq!(krama_telu, "అ॒గ్నిమీ॑ళే । ఈ॒ళే॒ ఇతి॑ ఈ॒ళే॒ ॥");
     }
 }

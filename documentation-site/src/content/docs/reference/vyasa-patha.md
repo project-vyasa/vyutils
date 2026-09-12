@@ -53,7 +53,7 @@ vyasa-patha "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-�
 
 Output:
 ```text
-अ॒ग्निमी॒ळे॒ । ई॒ळे॒ पु॒रो-हि॑तम् । पु॒रो-हि॑तं य॒ज्ञस्य॑ । य॒ज्ञस्य॑ दे॒वम् । दे॒वमृ॒त्विज॑म् । ऋ॒त्विग् इति॑ ऋ॒त्विज॑म् ॥
+अ॒ग्निमी॑ळे । ई॒ळे॒ पु॒रोहि॑तम् । पु॒रो-हि॑तम् । पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम् । पु॒रोहि॑तं य॒ज्ञस्य॑ । य॒ज्ञस्य॑ दे॒वम् । दे॒वमृ॒त्विज॑म् । ऋ॒त्विज॒मित्यृ॒त्विज॑म् ॥
 ```
 
 ### 2. Stepped Pairwise Output (`--steps`)
@@ -64,9 +64,10 @@ vyasa-patha "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-�
 
 Output:
 ```text
-1. (1-2) अ॒ग्निमी॒ळे॒
-2. (2-3) ई॒ळे॒ पु॒रो-हि॑तम्
-3. (3) पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्
+1. (1-2) अ॒ग्निमी॑ळे
+2. (2-3) ई॒ळे॒ पु॒रोहि॑तम्
+3. (3) पु॒रो-हि॑तम्
+4. (3-Par) पु॒रोहि॑तमिति॑ पु॒रो-हि॑तम्
 ```
 
 ### 3. Multi-Script Generation
@@ -78,9 +79,10 @@ vyasa-patha "अ॒ग्निम् । ई॒ळे॒ । पु॒रो-�
 
 Output:
 ```text
-1. (1-2) అ॒గ్నిమీ॒ళే॒
-2. (2-3) ఈ॒ళే॒ పు॒రో-హి॑తమ్
-3. (3) పు॒రోహి॑తమితి॑ పు॒రో-హి॑తమ్
+1. (1-2) అ॒గ్నిమీ॑ళే
+2. (2-3) ఈ॒ళే॒ పు॒రోహితమ్
+3. (3) పు॒రో-హితమ్
+4. (3-Par) పు॒రోహితమితి॑ పు॒రో-హితమ్
 ```
 
 Generate in Western Academic Roman (IAST):
@@ -128,13 +130,19 @@ let telugu = generate_krama_in_script("अ॒ग्निम् । ई॒ळे
 
 ---
 
-### 2. Mid-Level Prakṛti Functions
+### 2. Verse-Level & Mid-Level Prakṛti Functions
+
+#### `generate_krama_for_verse(pada_verse: &str) -> Vec<KramaStep>`
+Generates complete Krama steps for a multi-hemistich verse. Strictly respects ardharca boundaries (daṇḍa `।` pauses): hemistichs are never chained across `।`, terminal padas before `।` receive Parigraha, and compounds receive Parigraha.
+
+#### `parse_verse_hemistichs(input: &str) -> Vec<Vec<Pada>>`
+Splits a Pada-pāṭha verse by hemistich daṇḍas (`।` or `॥`) and parses each hemistich into its own `Vec<Pada>`.
 
 #### `parse_pada_patha(input: &str) -> Vec<Pada>`
 Parses a raw Pada-pāṭha string into individual `Pada` structs, resolving accents and compound hyphenation.
 
 #### `generate_krama_patha(padas: &[Pada]) -> Vec<KramaStep>`
-Permutes a slice of `Pada` elements into canonical `KramaStep` tokens with Pragṛhya and terminal Parigraha clauses.
+Permutes a slice of `Pada` elements into canonical `KramaStep` tokens with compound Parigraha and terminal Parigraha clauses.
 
 #### `format_krama_patha(steps: &[KramaStep]) -> String`
 Formats a slice of `KramaStep` tokens into continuous recitation text separated by single daṇḍas (`।`) and terminated by a double daṇḍa (`॥`).
@@ -159,11 +167,13 @@ Constructs a canonical Parigraha (*iti*) clause for a `Pada`:
 - Particle *u*: `ऊँ॒ इति॑ उ`
 
 #### `apply_forward_sandhi(p1: &Pada, p2: &Pada) -> String`
-Applies euphonic combination across the boundary of two adjacent padas:
-- Pragṛhya immunity (sandhi blocked if `p1.is_pragrhya()`)
-- Final *m* assimilation before vowels and consonants
-- Visarga assimilation before voiced consonants and vowels
-- Preservation of Unicode combining accent positions (`\u0951`, `\u0952`, `\u1CDA`)
+Applies authentic Vedic euphonic combination across adjacent padas:
+- **Pāṇini 8.4.66 (*udāttād anudāttasya svaritaḥ*)**: Shifts initial anudātta of `p2` to svarita if `p1` ends in udātta (`अ॒ग्निम्` + `ई॒ळे॒` $\to$ `अ॒ग्निमी॑ळे`).
+- **Pāṇini 8.4.67 Exception**: Suppresses the svarita shift if `p2` contains a following udātta/svarita (`दे॒वम्` + `ऋ॒त्विज॑म्` $\to$ `दे॒वमृ॒त्विज॑म्`).
+- **Pronoun Visarga Dropping**: Pronoun `सः` drops visarga before consonants (Pāṇini 6.1.132).
+- **Pragṛhya Immunity**: Sandhi blocked if `p1.is_pragrhya()`.
+- **Final *m* Assimilation**: Merges into vowels, becomes Anusvāra before consonants.
+- **Unicode Accent Sequences**: Guarantees Anusvāra precedes combining pitch marks (`\u0902\u0951`).
 
 ---
 
