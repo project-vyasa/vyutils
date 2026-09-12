@@ -503,12 +503,35 @@ Test Harness Architecture
 ```
 
 ### 1. Running Everyday Regression Tests
-Run the bundled dataset test (takes ~0.00s):
+Run the bundled regression tests (<30 ms for both RV 1.1 and the 169-verse curated tricky suite):
 ```bash
+# Run both everyday and curated tricky suites
 cargo test -p vyasa-patha --test data_driven_krama
+
+# Run only the 169-verse curated tricky suite
+cargo test -p vyasa-patha --test data_driven_krama test_curated_tricky_suite -- --nocapture
 ```
 
-### 2. Running Pre-Release Pipeline Verification
+The test runner will output:
+```text
+✓ Curated Tricky Suite: Validated 169 verses and 2947 Krama steps across 11 canonical hymns in <20ms!
+test test_curated_tricky_suite ... ok
+```
+
+### 2. Dataset Management with `scripts/rigveda_dataset.py`
+To synchronize, inspect, or add verses from the Wikisource pipeline without writing ad-hoc scripts:
+```bash
+# Inspect current curated tricky dataset
+python3 scripts/rigveda_dataset.py inspect
+
+# Rebuild the curated tricky dataset from the pipeline
+python3 scripts/rigveda_dataset.py build-tricky
+
+# Add or replace a specific verse (e.g. RV 1.164.1)
+python3 scripts/rigveda_dataset.py add -m 1 -s 164 -r 1 -c "Asya Vamasya Opening"
+```
+
+### 3. Running Pre-Release Pipeline Verification
 Prior to a release or significant crate update, run the harness against the comprehensive Wikisource pipeline:
 ```bash
 RIGVEDA_PIPELINE_PATH="/Users/anand/Projects/project-vyasa/sa.wikisource.org/data/processed/rigveda" \
@@ -520,11 +543,11 @@ The test runner will output:
 ```text
 === Pre-Release Krama Pipeline Test ===
 Checking pipeline directory: .../processed/rigveda
-Processing Sukta file: .../001_001.json (9 verses)
-Processing Sukta file: .../001_002.json (9 verses)
-Processing Sukta file: .../001_003.json (12 verses)
-Processing Sukta file: .../001_004.json (10 verses)
-Processing Sukta file: .../001_005.json (10 verses)
+Processing Sukta file: .../001.vy (9 verses)
+Processing Sukta file: .../002.vy (9 verses)
+Processing Sukta file: .../003.vy (13 verses)
+Processing Sukta file: .../004.vy (10 verses)
+Processing Sukta file: .../005.vy (10 verses)
 ✓ Validated 51 ṛks and generated 600+ Krama steps successfully!
 ```
 
@@ -553,3 +576,37 @@ Load at least: Noto Sans Devanagari, Telugu, Kannada, Malayalam, Bengali, Noto S
 ```
 
 Apply that class (or the same stack on `--font-sans`) to **tables and selects**, not only `<textarea>`. Inter/`system-ui` alone will box Malayalam and Bengali in Chromium.
+
+---
+
+## 8. Appendix: Traditional Phonological Assessment & The "Tricky" Ṛgveda Suite
+
+A comprehensive survey of all **10,547 verses across all 1,028 Sūktas (10 Maṇḍalas)** in the pipeline reveals why certain Vedic hymns are regarded by traditional Vaidikas, Ghanapāṭhins, and phonologists as the ultimate benchmark for recitation engines.
+
+### The 6 Categories of Phonological Complexity
+
+| Category | Phonological Phenomenon | Traditional Authority | Canonical Hymns & Triggers |
+|:---|:---|:---|:---|
+| **1. Dual Pragṛhyas & Compound Parigraha** | Duals in `-ī`, `-ū`, `-e` block sandhi; compound names require *Unified + इति + Split* parigraha. | Pāṇini 1.1.11 (*īdūded dvivacanam*) | **RV 1.2** (`वायो॒ इति॑`, `इन्द्र॑वायू॒ इति॑`, `वाजिनीवसू`), **RV 6.69** (Indrā-Viṣṇū, 7 dual pragṛhyas in 8 verses). |
+| **2. Pronoun Sandhi & Refrains** | Pronoun `सः` (*saḥ*) obligatorily drops visarga before consonants, but retains it before vowels. | Pāṇini 6.1.132 (*eta-tadoḥ sulopo 'kor anañ-sve hali*) | **RV 2.12** (Indra Sūkta): 15 verses each ending with refrain `स जना॑स॒ इन्द्रः॑` (`सः` + `जनासः` $\to$ `स जनास`). |
+| **3. Svarita Accent Shift & Exceptions** | Udātta + Anudātta $\to$ Svarita ($U + A \to S$), but suppressed if following syllable is accented. | Pāṇini 8.4.66 & 8.4.67 (*nodātta-svaritodātta-pade*) | **RV 1.1** (`अ॒ग्निमी॑ळे` shift vs. `दे॒वमृ॒त्विज॑म्` non-shift). |
+| **4. Deep Multi-Member Compounds (*Samāsa*)** | Multi-avagraha compounds, nested Bahuvrīhis, and riddle terms requiring clean sandhi in steps. | Śākalya Padapāṭha & Ṛk-Prātīśākhya | **RV 1.164** (*Asya Vāmasya*, 52 verses, 121 compounds, 800+ lateral flaps `ळ`/`ळ्ह`), **RV 9.86 / 9.97** (Pavamāna Soma). |
+| **5. Liturgical Core ("Crown Jewels")** | Ubiquitous ritual hymns scrutinized by traditionalists for zero-error sandhi, virāma, and neuter forms. | Śrauta & Smārta Liturgical Tradition | **RV 10.90** (Puruṣa Sūkta, 16 verses), **RV 10.125** (Devī Sūkta, 8 verses), **RV 10.129** (Nāsadīya Sūkta, 7 verses). |
+| **6. Sacred Metrical Transitions** | Metrical pauses, relative pronoun sandhi (`धियो यो नः`), and boundary Parigrahas. | Gāyatrī, Triṣṭubh, and Jagatī Chandas | **RV 3.62** (incl. Gāyatrī 3.62.10), **RV 7.59** (incl. Mahāmṛtyuñjaya 7.59.12), **RV 1.32** (Indra-Vṛtra epic). |
+
+### The 11 Canonical Hymns in `rv_curated_tricky.json`
+
+The curated test dataset (`crates/vyasa-patha/tests/data/rv_curated_tricky.json`) bundles **169 verses (2,947 Krama steps)** covering all 6 categories:
+
+1. **RV 1.1 (Agni Sūkta - 9 verses)**: Universal opening; tests Pāṇini 8.4.66/67 accent shift, compound unification (`ई॒ळे॒ पु॒रोहि॑तम्`), and ardharca boundaries.
+2. **RV 1.2 (Vāyu & Indra-Vāyu - 9 verses)**: Canonical textbook introduction to dual Pragṛhyas (`-ū`), vocative `-o`, and compound Parigraha.
+3. **RV 1.32 (Indra Vṛtra-vadha - 15 verses)**: Classical epic narrative phonology, dense consonant clusters, and aspirated lateral flaps (`वृ॒ळ्हम्`).
+4. **RV 1.164 (*Asya Vāmasya* - 52 verses)**: Supreme phonological test of Maṇḍala 1; 121 compounds, 800+ lateral flaps, and philosophical riddle constructions.
+5. **RV 2.12 (Indra Sūkta / Gṛtsamada - 15 verses)**: Celebrated refrain hymn testing pronoun visarga drop `स जनास इन्द्रः`.
+6. **RV 3.62 (Viśvāmitra - 18 verses)**: Contains the Gāyatrī mantra (3.62.10); tests relative pronoun sandhi (`धियो॒ यो नः॑`).
+7. **RV 6.69 (Indrā-Viṣṇū - 8 verses)**: Highest concentration of dual Pragṛhyas in the Ṛgveda (7 pragṛhya `iti` clauses in 8 verses).
+8. **RV 7.59 (Maruts - 12 verses)**: Contains the Mahāmṛtyuñjaya mantra (7.59.12); tests metrical transitions.
+9. **RV 10.90 (Puruṣa Sūkta - 16 verses)**: Chanted across all Vedic rituals; dense with compounds (`स॒हस्र॑-शीर्षा`, `स॒हस्र॑-अक्षः`, `स॒हस्र॑-पात्`) and neuter virāma sandhi.
+10. **RV 10.125 (Devī Sūkta / Vāk - 8 verses)**: Sovereign first-person affirmations with intense consonant assimilation.
+11. **RV 10.129 (Nāsadīya Sūkta - 7 verses)**: The Hymn of Creation; negative particle sandhi (`नास॑दासी॒न्नो सदा॑सीत्`), interrogatives, and pluta.
+

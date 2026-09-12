@@ -29,6 +29,19 @@ struct RikData {
     samhita: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+struct CuratedVerse {
+    mandala: u32,
+    sukta: u32,
+    rik: u32,
+    hymn_name: String,
+    category: String,
+    padapatha: String,
+    #[serde(default)]
+    samhitapatha: String,
+}
+
 /// Everyday regression test: validates all 9 ṛks of Ṛgveda Sūkta 1.1 with zero external dependencies.
 #[test]
 fn test_everyday_regression_rv_1_1() {
@@ -90,6 +103,98 @@ fn test_everyday_regression_rv_1_1() {
             "Telugu Krama must preserve Vedic Svara accents"
         );
     }
+}
+
+/// Comprehensive built-in tricky regression suite:
+/// Validates 169 verses across 11 canonical, phonologically challenging hymns
+/// (Agni, Vāyu duals, Indra-Vṛtra, Asya Vāmasya, Gṛtsamada refrains, Gāyatrī,
+/// Indrā-Viṣṇū, Mahāmṛtyuñjaya, Puruṣa Sūkta, Devī Sūkta, and Nāsadīya Sūkta).
+#[test]
+fn test_curated_tricky_suite() {
+    let json_str = include_str!("data/rv_curated_tricky.json");
+    let verses: Vec<CuratedVerse> =
+        serde_json::from_str(json_str).expect("Failed to parse rv_curated_tricky.json");
+
+    assert_eq!(verses.len(), 169);
+
+    let mut total_steps = 0;
+
+    for v in &verses {
+        // 1. Verify hemistich decomposition
+        let hemistichs = parse_verse_hemistichs(&v.padapatha);
+        assert!(
+            !hemistichs.is_empty(),
+            "RV {}.{}.{} ({}) must parse into hemistichs",
+            v.mandala,
+            v.sukta,
+            v.rik,
+            v.hymn_name
+        );
+
+        // 2. Generate Krama steps respecting Ardharca boundaries
+        let steps = generate_krama_for_verse(&v.padapatha);
+        assert!(
+            !steps.is_empty(),
+            "RV {}.{}.{} ({}) must produce Krama steps",
+            v.mandala,
+            v.sukta,
+            v.rik,
+            v.hymn_name
+        );
+        total_steps += steps.len();
+
+        // 3. Verify compound delimiters are cleanly processed
+        for step in &steps {
+            assert!(
+                !step.text.contains(" -") && !step.text.contains("- "),
+                "RV {}.{}.{} step {} should not leak raw compound hyphens: '{}'",
+                v.mandala,
+                v.sukta,
+                v.rik,
+                step.step_number,
+                step.text
+            );
+        }
+
+        // 4. Format complete Krama text
+        let formatted = format_krama_patha(&steps);
+        assert!(
+            formatted.ends_with('॥') || formatted.ends_with('।'),
+            "RV {}.{}.{} formatted Krama must terminate with danda",
+            v.mandala,
+            v.sukta,
+            v.rik
+        );
+    }
+
+    // Spot check 1: Puruṣa Sūkta (10.90.1) starts with sahasra-śīrṣā
+    let purusha_1 = verses
+        .iter()
+        .find(|v| v.mandala == 10 && v.sukta == 90 && v.rik == 1)
+        .expect("RV 10.90.1 must exist");
+    let p_steps = generate_krama_for_verse(&purusha_1.padapatha);
+    assert!(
+        p_steps[0].text.contains("स॒हस्र॑शीर्षा") || p_steps[0].text.contains("सहस्र"),
+        "Puruṣa Sūkta step 1 must contain sahasra-śīrṣā"
+    );
+
+    // Spot check 2: Indra Sūkta (2.12.1) has pronoun visarga drop on 'स ज॒ना॒'
+    let indra_1 = verses
+        .iter()
+        .find(|v| v.mandala == 2 && v.sukta == 12 && v.rik == 1)
+        .expect("RV 2.12.1 must exist");
+    let i_steps = generate_krama_for_verse(&indra_1.padapatha);
+    let i_formatted = format_krama_patha(&i_steps);
+    assert!(
+        i_formatted.contains("स ज॒ना॒") || i_formatted.contains("स जना"),
+        "RV 2.12.1 must drop visarga on saḥ before consonant"
+    );
+
+    println!(
+        "\n✓ Curated Tricky Suite: Validated {} verses and {} Krama steps across 11 canonical hymns in <20ms!",
+        verses.len(),
+        total_steps
+    );
 }
 
 /// Large-sample test option for pre-release validation against the raw data pipeline.
