@@ -137,6 +137,8 @@ pub const fn is_rakta(varna: &Varna) -> bool {
                 | Ayogavaha::Candrabindu
                 | Ayogavaha::GomukhaAnusvara
                 | Ayogavaha::DvibinduAnusvara
+                | Ayogavaha::Nasikya
+                | Ayogavaha::Ranga
         ),
     }
 }

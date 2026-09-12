@@ -80,3 +80,26 @@ pub struct AksharaAnalysisDto {
     pub svara: Option<String>,
     pub total_matra: f32,
 }
+
+/// Svarita variety according to *Taittirīya-Prātiśākhya* Ch. 20.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct TaittiriyaSvaritaDto {
+    pub id: String,
+    pub name_deva: String,
+    pub name_iast: String,
+    pub is_nitya: bool,
+}
+
+/// Phonetic and articulatory properties under the *Taittirīya-Prātiśākhya*.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct TaittiriyaVarnaDto {
+    pub glyph_deva: String,
+    pub glyph_iast: String,
+    pub varna_type: String,
+    pub sthana: Vec<String>,
+    pub karana: String,
+    pub abhyantara_prayatna: String,
+    pub is_ghosha: bool,
+    pub is_alpaprana: bool,
+    pub matra: f32,
+}

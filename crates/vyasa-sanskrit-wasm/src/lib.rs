@@ -19,8 +19,10 @@ use vyasa_patha::{
 };
 use vyasa_phonetics::panini::ItMarker;
 use vyasa_phonetics::{
-    abhyantara_prayatna, is_alpaprana, is_ghosha, matra, sthana, AbhyantaraPrayatna, Consonant,
-    Pratyahara, ShivaSutraSound, Sthana, Varna, Vowel, VowelLength, VowelQuality, SHIVA_SUTRAS,
+    abhyantara_prayatna, classify_taittiriya_svarita, is_alpaprana, is_ghosha, karana, matra,
+    should_double_in_taittiriya, sthana, AbhyantaraPrayatna, Consonant, Karana, Pratyahara,
+    ShivaSutraSound, Sthana, SvaritaJunctureContext, TaittiriyaSvarita, Varna, Vowel, VowelLength,
+    VowelQuality, SHIVA_SUTRAS,
 };
 
 pub mod dto;
@@ -456,6 +458,19 @@ fn abhyantara_to_str(a: AbhyantaraPrayatna) -> &'static str {
     }
 }
 
+fn karana_to_str(k: Karana) -> &'static str {
+    match k {
+        Karana::Jihvagram => "Jihvāgram (Tongue tip)",
+        Karana::Jihvopamadhya => "Jihvopamadhya (Tongue blade/edges)",
+        Karana::Jihvamadhya => "Jihvāmādhya (Tongue middle)",
+        Karana::Jihvamula => "Jihvāmūla (Tongue root)",
+        Karana::Prativestitam => "Prativeṣṭitam (Curled tongue tip)",
+        Karana::Adharostha => "Adharoṣṭha (Lower lip)",
+        Karana::Hanu => "Hanu (Jaws/open vocal tract)",
+        Karana::NasikaBila => "Nāsikābila (Nasal cavity)",
+    }
+}
+
 fn varna_dto_from_varna(
     varna: &Varna,
     deva: &str,
@@ -587,11 +602,11 @@ fn it_marker_to_glyphs(it: ItMarker) -> (&'static str, &'static str) {
 fn sound_from_symbol(sym: &str) -> Option<ShivaSutraSound> {
     let s = sym.trim();
     match s {
-        "a" | "अ" => Some(ShivaSutraSound::Vowel(VowelQuality::A)),
-        "i" | "इ" => Some(ShivaSutraSound::Vowel(VowelQuality::I)),
-        "u" | "उ" => Some(ShivaSutraSound::Vowel(VowelQuality::U)),
-        "ṛ" | "r" | "ऋ" => Some(ShivaSutraSound::Vowel(VowelQuality::R)),
-        "ḷ" | "l" | "ऌ" => Some(ShivaSutraSound::Vowel(VowelQuality::L)),
+        "a" | "ā" | "अ" | "आ" => Some(ShivaSutraSound::Vowel(VowelQuality::A)),
+        "i" | "ī" | "इ" | "ई" => Some(ShivaSutraSound::Vowel(VowelQuality::I)),
+        "u" | "ū" | "उ" | "ऊ" => Some(ShivaSutraSound::Vowel(VowelQuality::U)),
+        "ṛ" | "ṝ" | "ऋ" | "ॠ" => Some(ShivaSutraSound::Vowel(VowelQuality::R)),
+        "ḷ" | "ḹ" | "ऌ" | "ॡ" => Some(ShivaSutraSound::Vowel(VowelQuality::L)),
         "e" | "ए" => Some(ShivaSutraSound::Vowel(VowelQuality::E)),
         "ai" | "ऐ" => Some(ShivaSutraSound::Vowel(VowelQuality::Ai)),
         "o" | "ओ" => Some(ShivaSutraSound::Vowel(VowelQuality::O)),
@@ -622,8 +637,8 @@ fn sound_from_symbol(sym: &str) -> Option<ShivaSutraSound> {
         "bh" | "भ" | "भ्" => Some(ShivaSutraSound::Consonant(Consonant::Bh)),
         "m" | "म" | "म्" => Some(ShivaSutraSound::Consonant(Consonant::M)),
         "y" | "य" | "य्" => Some(ShivaSutraSound::Consonant(Consonant::Y)),
-        "ra" | "र" | "र्" => Some(ShivaSutraSound::Consonant(Consonant::R)),
-        "la" | "ल" | "ल्" => Some(ShivaSutraSound::Consonant(Consonant::L)),
+        "r" | "ra" | "र" | "र्" => Some(ShivaSutraSound::Consonant(Consonant::R)),
+        "l" | "la" | "ल" | "ल्" => Some(ShivaSutraSound::Consonant(Consonant::L)),
         "v" | "व" | "व्" => Some(ShivaSutraSound::Consonant(Consonant::V)),
         "ś" | "श" | "श्" => Some(ShivaSutraSound::Consonant(Consonant::Sh)),
         "ṣ" | "ष" | "ष्" => Some(ShivaSutraSound::Consonant(Consonant::Ss)),
@@ -631,4 +646,159 @@ fn sound_from_symbol(sym: &str) -> Option<ShivaSutraSound> {
         "h" | "ह" | "ह्" => Some(ShivaSutraSound::Consonant(Consonant::H)),
         _ => None,
     }
+}
+
+// ============================================================================
+// 4. KRISHNA YAJURVEDA (TAITTIRĪYA-PRĀTIŚĀKHYA) APIS
+// ============================================================================
+
+pub fn get_taittiriya_svaritas_list() -> Vec<TaittiriyaSvaritaDto> {
+    let svaritas = [
+        TaittiriyaSvarita::Jatya,
+        TaittiriyaSvarita::Kshaipra,
+        TaittiriyaSvarita::Abhinihita,
+        TaittiriyaSvarita::Prashlishta,
+        TaittiriyaSvarita::Tairovyanjana,
+        TaittiriyaSvarita::Tairovirama,
+        TaittiriyaSvarita::Padavrtta,
+        TaittiriyaSvarita::Tathabhavya,
+    ];
+
+    svaritas
+        .into_iter()
+        .map(|s| TaittiriyaSvaritaDto {
+            id: s.id().to_string(),
+            name_deva: s.name_deva().to_string(),
+            name_iast: s.name_iast().to_string(),
+            is_nitya: s.is_nitya(),
+        })
+        .collect()
+}
+
+/// Returns all canonical Svarita varieties defined in *Taittirīya-Prātiśākhya* Ch. 20 as JSON string.
+#[wasm_bindgen]
+pub fn get_taittiriya_svaritas_json() -> Result<String, JsValue> {
+    let dtos = get_taittiriya_svaritas_list();
+    serde_json::to_string(&dtos).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// Returns all canonical Svarita varieties defined in *Taittirīya-Prātiśākhya* Ch. 20.
+#[wasm_bindgen]
+pub fn get_taittiriya_svaritas() -> Result<JsValue, JsValue> {
+    let dtos = get_taittiriya_svaritas_list();
+    serde_wasm_bindgen::to_value(&dtos).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+pub fn inspect_taittiriya_varna_dto(input: &str) -> Result<TaittiriyaVarnaDto, String> {
+    let sound = sound_from_symbol(input).ok_or_else(|| format!("Unrecognized sound: {input}"))?;
+
+    let varna = match &sound {
+        ShivaSutraSound::Vowel(q) => Varna::Vowel(Vowel::new(*q, VowelLength::Hrasva)),
+        ShivaSutraSound::Consonant(c) => Varna::Consonant(*c),
+    };
+
+    let (deva, iast) = sound_to_glyphs(&sound);
+    let vtype = match &sound {
+        ShivaSutraSound::Vowel(_) => "vowel",
+        ShivaSutraSound::Consonant(_) => "consonant",
+    };
+
+    let sthana_names: Vec<String> = sthana(&varna)
+        .iter()
+        .map(|&s| sthana_to_str(s).to_string())
+        .collect();
+    let karana_name = karana_to_str(karana(&varna)).to_string();
+    let abhyantara = abhyantara_to_str(abhyantara_prayatna(&varna)).to_string();
+    let ghosha = is_ghosha(&varna);
+    let alpaprana = match &varna {
+        Varna::Consonant(c) => is_alpaprana(c),
+        _ => false,
+    };
+    let m = matra(&varna);
+
+    Ok(TaittiriyaVarnaDto {
+        glyph_deva: deva.to_string(),
+        glyph_iast: iast.to_string(),
+        varna_type: vtype.to_string(),
+        sthana: sthana_names,
+        karana: karana_name,
+        abhyantara_prayatna: abhyantara,
+        is_ghosha: ghosha,
+        is_alpaprana: alpaprana,
+        matra: m,
+    })
+}
+
+/// Computes phonetic classification including passive Sthāna and active TPr Karaṇa for a single sound as JSON string.
+#[wasm_bindgen]
+pub fn inspect_taittiriya_varna_json(input: &str) -> Result<String, JsValue> {
+    let dto = inspect_taittiriya_varna_dto(input).map_err(|e| JsValue::from_str(&e))?;
+    serde_json::to_string(&dto).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// Computes phonetic classification including passive Sthāna and active TPr Karaṇa for a single sound.
+#[wasm_bindgen]
+pub fn inspect_taittiriya_varna(input: &str) -> Result<JsValue, JsValue> {
+    let dto = inspect_taittiriya_varna_dto(input).map_err(|e| JsValue::from_str(&e))?;
+    serde_wasm_bindgen::to_value(&dto).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// Checks if a consonant doubles (geminates) in Taittirīya recitation according to TPr Ch. 14.
+#[wasm_bindgen]
+pub fn check_taittiriya_dvitva(
+    prev_glyph: Option<String>,
+    curr_glyph: &str,
+    next_glyph: Option<String>,
+) -> Result<bool, JsValue> {
+    let curr_sound = sound_from_symbol(curr_glyph)
+        .ok_or_else(|| JsValue::from_str(&format!("Unrecognized consonant: {curr_glyph}")))?;
+
+    let curr_c = match curr_sound {
+        ShivaSutraSound::Consonant(c) => c,
+        _ => return Ok(false),
+    };
+
+    let prev_varna = prev_glyph
+        .and_then(|g| sound_from_symbol(&g))
+        .map(|s| match s {
+            ShivaSutraSound::Vowel(q) => Varna::Vowel(Vowel::new(q, VowelLength::Hrasva)),
+            ShivaSutraSound::Consonant(c) => Varna::Consonant(c),
+        });
+
+    let next_varna = next_glyph
+        .and_then(|g| sound_from_symbol(&g))
+        .map(|s| match s {
+            ShivaSutraSound::Vowel(q) => Varna::Vowel(Vowel::new(q, VowelLength::Hrasva)),
+            ShivaSutraSound::Consonant(c) => Varna::Consonant(c),
+        });
+
+    Ok(should_double_in_taittiriya(
+        prev_varna.as_ref(),
+        curr_c,
+        next_varna.as_ref(),
+    ))
+}
+
+/// Classifies a Svarita by context string under *Taittirīya-Prātiśākhya* Ch. 20.
+#[wasm_bindgen]
+pub fn classify_taittiriya_svarita_by_context(
+    context_str: &str,
+) -> Result<Option<String>, JsValue> {
+    let context = match context_str {
+        "InternalSemivowelStem" => SvaritaJunctureContext::InternalSemivowelStem,
+        "SemivowelSandhi" => SvaritaJunctureContext::SemivowelSandhi,
+        "AbhinihitaElision" => SvaritaJunctureContext::AbhinihitaElision,
+        "CoalescentLongVowel" => SvaritaJunctureContext::CoalescentLongVowel,
+        "PostUdattaConsonant" => SvaritaJunctureContext::PostUdattaConsonant,
+        "HiatusWithoutSandhi" => SvaritaJunctureContext::HiatusWithoutSandhi,
+        "AcrossVirama" => SvaritaJunctureContext::AcrossVirama,
+        _ => {
+            return Err(JsValue::from_str(&format!(
+                "Unknown context: {context_str}"
+            )))
+        }
+    };
+
+    let result = classify_taittiriya_svarita(vyasa_phonetics::Svara::Svarita, context);
+    Ok(result.map(|s| s.id().to_string()))
 }

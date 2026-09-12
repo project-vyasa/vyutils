@@ -9,6 +9,7 @@ pub mod articulatory;
 pub mod panini;
 pub mod pratisakhya;
 pub mod sound;
+pub mod taittiriya;
 pub mod varnamala;
 
 // Re-export common types
@@ -20,6 +21,10 @@ pub use pratisakhya::{
 };
 pub use sound::{
     Ayogavaha, Consonant, ConsonantVarga, Svara, Varna, Vowel, VowelLength, VowelQuality,
+};
+pub use taittiriya::{
+    classify_taittiriya_svarita, is_ranga_context, karana, ranga_duration_matra,
+    should_double_in_taittiriya, Karana, SvaritaJunctureContext, TaittiriyaSvarita,
 };
 pub use varnamala::{LAUKIKA_CONSONANTS, LAUKIKA_VOWELS};
 
@@ -210,5 +215,89 @@ mod tests {
         assert_eq!(sthana(&Varna::Consonant(lh_vedic)), &[Sthana::Murdha]);
         assert!(is_alpaprana(&l_vedic));
         assert!(is_mahaprana(&lh_vedic));
+    }
+
+    #[test]
+    fn test_taittiriya_karana_and_svarita() {
+        // Karaṇa tests (TPr 2.33-45)
+        let t = Varna::Consonant(Consonant::T);
+        let c = Varna::Consonant(Consonant::C);
+        let tt = Varna::Consonant(Consonant::Tt);
+        let k = Varna::Consonant(Consonant::K);
+        let p = Varna::Consonant(Consonant::P);
+        let jm = Varna::Ayogavaha(Ayogavaha::Jihvamuliya);
+        let nasikya = Varna::Ayogavaha(Ayogavaha::Nasikya);
+
+        assert_eq!(karana(&t), Karana::Jihvagram);
+        assert_eq!(karana(&c), Karana::Jihvopamadhya);
+        assert_eq!(karana(&tt), Karana::Prativestitam);
+        assert_eq!(karana(&k), Karana::Jihvamadhya);
+        assert_eq!(karana(&p), Karana::Adharostha);
+        assert_eq!(karana(&jm), Karana::Jihvamula);
+        assert_eq!(karana(&nasikya), Karana::NasikaBila);
+
+        // Svarita classification (TPr 20.1)
+        assert_eq!(
+            classify_taittiriya_svarita(
+                Svara::Svarita,
+                SvaritaJunctureContext::InternalSemivowelStem
+            ),
+            Some(TaittiriyaSvarita::Jatya)
+        );
+        assert_eq!(
+            classify_taittiriya_svarita(Svara::Svarita, SvaritaJunctureContext::SemivowelSandhi),
+            Some(TaittiriyaSvarita::Kshaipra)
+        );
+        assert_eq!(
+            classify_taittiriya_svarita(Svara::Svarita, SvaritaJunctureContext::AbhinihitaElision),
+            Some(TaittiriyaSvarita::Abhinihita)
+        );
+        assert_eq!(
+            classify_taittiriya_svarita(
+                Svara::Svarita,
+                SvaritaJunctureContext::CoalescentLongVowel
+            ),
+            Some(TaittiriyaSvarita::Prashlishta)
+        );
+        assert_eq!(
+            classify_taittiriya_svarita(
+                Svara::Svarita,
+                SvaritaJunctureContext::PostUdattaConsonant
+            ),
+            Some(TaittiriyaSvarita::Tairovyanjana)
+        );
+        assert_eq!(
+            classify_taittiriya_svarita(
+                Svara::Svarita,
+                SvaritaJunctureContext::HiatusWithoutSandhi
+            ),
+            Some(TaittiriyaSvarita::Padavrtta)
+        );
+        assert_eq!(
+            classify_taittiriya_svarita(Svara::Svarita, SvaritaJunctureContext::AcrossVirama),
+            Some(TaittiriyaSvarita::Tairovirama)
+        );
+
+        // Nitya vs Enclitic
+        assert!(TaittiriyaSvarita::Jatya.is_nitya());
+        assert!(TaittiriyaSvarita::Kshaipra.is_nitya());
+        assert!(TaittiriyaSvarita::Abhinihita.is_nitya());
+        assert!(TaittiriyaSvarita::Prashlishta.is_nitya());
+        assert!(TaittiriyaSvarita::Tairovyanjana.is_enclitic());
+        assert!(TaittiriyaSvarita::Padavrtta.is_enclitic());
+
+        // Dvitva tests (TPr 14.4 & 14.8)
+        let r = Varna::Consonant(Consonant::R);
+        let a = Varna::Vowel(Vowel::new(VowelQuality::A, VowelLength::Hrasva));
+        let v = Varna::Consonant(Consonant::V);
+
+        // Stop after r doubles: arka -> arkka
+        assert!(should_double_in_taittiriya(Some(&r), Consonant::K, None));
+        // Sibilant after vowel before consonant doubles: aśva -> aśśva
+        assert!(should_double_in_taittiriya(
+            Some(&a),
+            Consonant::Sh,
+            Some(&v)
+        ));
     }
 }

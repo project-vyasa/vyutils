@@ -90,6 +90,34 @@ fn main() {
 }
 ```
 
+#### 4. Krishna Yajurveda Phonology (`vyasa-phonetics`)
+```rust
+use vyasa_phonetics::{
+    karana, sthana, classify_taittiriya_svarita, should_double_in_taittiriya,
+    Karana, Sthana, Svara, SvaritaJunctureContext, TaittiriyaSvarita,
+    Varna, Consonant, Ayogavaha,
+};
+
+fn main() {
+    // 1. Active Articulator (Karaṇa) vs Passive Place (Sthāna) under TPr Ch. 2
+    let c = Varna::Consonant(Consonant::C);
+    assert_eq!(karana(&c), Karana::Jihvopamadhya); // Tongue blade/edges
+    assert_eq!(sthana(&c), vec![Sthana::Talu]); // Hard palate
+
+    // 2. 8-fold Svarita classification under TPr Ch. 20
+    let kshaipra = classify_taittiriya_svarita(
+        Svara::Svarita,
+        SvaritaJunctureContext::SemivowelSandhi,
+    );
+    assert_eq!(kshaipra, Some(TaittiriyaSvarita::Kshaipra));
+
+    // 3. Consonant gemination (Dvitva) under TPr Ch. 14
+    // In "arkaḥ", k preceded by r doubles before a vowel
+    let r = Varna::Consonant(Consonant::R);
+    assert!(should_double_in_taittiriya(Some(&r), Consonant::K, None));
+}
+```
+
 ---
 
 ## 3. Option B: WebAssembly (`@project-vyasa/sanskrit-wasm`)
@@ -123,7 +151,7 @@ await init();
 
 ## 4. WebAssembly Exported Functions Reference
 
-Below is a complete reference with a dedicated code example for each of the 13 exported functions.
+Below is a complete reference with a dedicated code example for each of the 17 exported functions.
 
 ```typescript
 import init, {
@@ -139,7 +167,11 @@ import init, {
   get_pratyahara_sounds,
   check_pratyahara_contains,
   inspect_varna,
-  analyze_syllables
+  analyze_syllables,
+  get_taittiriya_svaritas,
+  inspect_taittiriya_varna,
+  check_taittiriya_dvitva,
+  classify_taittiriya_svarita_by_context
 } from '@project-vyasa/sanskrit-wasm';
 ```
 
@@ -484,6 +516,91 @@ console.log(syllables);
 
 ---
 
+### Function 14: `get_taittiriya_svaritas`
+
+Returns the canonical 8-fold Svarita accent varieties defined in *Taittirīya-Prātiśākhya* Chapter 20, identifying whether each accent is *Nitya* (independent/inherent) or enclitic (contextual).
+
+```typescript
+const svaritas = get_taittiriya_svaritas();
+
+console.log(svaritas);
+/* Output:
+[
+  { id: "Jatya", name_deva: "जात्य", name_iast: "Jātya", is_nitya: true },
+  { id: "Kshaipra", name_deva: "क्षैप्र", name_iast: "Kṣaipra", is_nitya: true },
+  { id: "Abhinihita", name_deva: "अभिनिहित", name_iast: "Abhinihita", is_nitya: true },
+  { id: "Prashlishta", name_deva: "प्रश्लिष्ट", name_iast: "Praśliṣṭa", is_nitya: true },
+  { id: "Tairovyanjana", name_deva: "तैरोव्यञ्जन", name_iast: "Tairovyañjana", is_nitya: false },
+  { id: "Tairovirama", name_deva: "तैरोविराम", name_iast: "Tairovirāma", is_nitya: false },
+  { id: "Padavrtta", name_deva: "पादवृत्त", name_iast: "Pādavṛtta", is_nitya: false },
+  { id: "Tathabhavya", name_deva: "तथाभाव्य", name_iast: "Tathābhāvya", is_nitya: false }
+]
+*/
+```
+
+---
+
+### Function 15: `inspect_taittiriya_varna`
+
+Computes the articulatory classification for a single sound symbol under the *Taittirīya-Prātiśākhya* Chapter 2 framework, calculating both the passive place (*Sthāna*) and active articulator (*Karaṇa*).
+
+```typescript
+const analysis = inspect_taittiriya_varna("t");
+
+console.log(analysis);
+/* Output:
+{
+  glyph_deva: "त",
+  glyph_iast: "t",
+  varna_type: "consonant",
+  sthana: ["Danta (Dental)"],
+  karana: "Jihvāgram (Tongue tip)",
+  abhyantara_prayatna: "Spṛṣṭa (Complete contact)",
+  is_ghosha: false,
+  is_alpaprana: true,
+  matra: 0.5
+}
+*/
+```
+
+---
+
+### Function 16: `check_taittiriya_dvitva`
+
+Evaluates whether a consonant geminates (doubles) in Taittirīya recitation according to the rules of *Taittirīya-Prātiśākhya* Chapter 14 (e.g. TPr 14.1 post-vocalic conjuncts, TPr 14.4 consonants following *r* or *h*).
+
+```typescript
+// In "arkaḥ" (अ॒र्कः॑): does 'k' preceded by 'r' double?
+const doublesArka = check_taittiriya_dvitva("r", "k", null);
+console.log(doublesArka); // true => "arkkaḥ"
+
+// Does initial 'k' double before a vowel without preceding consonant?
+const doublesSimple = check_taittiriya_dvitva(null, "k", "a");
+console.log(doublesSimple); // false
+```
+
+---
+
+### Function 17: `classify_taittiriya_svarita_by_context`
+
+Classifies an accent into one of the 8 canonical *Taittirīya-Prātiśākhya* Svaritas given its phonological juncture context.
+
+```typescript
+// Semivowel Sandhi (e.g., ví + abravīt -> vyàbravīt)
+const svarita1 = classify_taittiriya_svarita_by_context("SemivowelSandhi");
+console.log(svarita1); // "Kshaipra"
+
+// Avagraha elision (e.g., té + abruvan -> té 'bruvan)
+const svarita2 = classify_taittiriya_svarita_by_context("AbhinihitaElision");
+console.log(svarita2); // "Abhinihita"
+
+// Post-Udātta enclitic across consonant
+const svarita3 = classify_taittiriya_svarita_by_context("PostUdattaConsonant");
+console.log(svarita3); // "Tairovyanjana"
+```
+
+---
+
 ## 5. SvelteKit Integration Example
 
 Here is a complete, production-ready Svelte component using the WASM module:
@@ -613,6 +730,43 @@ Processing Sukta file: .../003.vy (13 verses)
 Processing Sukta file: .../004.vy (10 verses)
 Processing Sukta file: .../005.vy (10 verses)
 ✓ Validated 51 ṛks and generated 600+ Krama steps successfully!
+```
+
+### 4. Krishna Yajurveda Data-Driven Harness (`kyv_corpus.json`)
+
+Modeled directly after the Rigveda harness, `vyasa-phonetics` includes a dedicated corpus-driven test suite (`crates/vyasa-phonetics/tests/data_driven_taittiriya.rs`) driven by a standalone, version-controlled JSON dataset (`crates/vyasa-phonetics/tests/data/kyv_corpus.json`).
+
+#### Curated Benchmark Corpus
+The dataset bundles 7 canonical passages across the 3 core Taittirīya texts:
+1. **Taittirīya Saṃhitā**:
+   - TS 1.1.1 (Opening: *iṣe tvorje tvā...*)
+   - TS 4.5.1 (*Śrī Rudram / Namakam*)
+   - TS 4.7.1 (*Camakam*)
+2. **Taittirīya Upaniṣad**:
+   - *Śīkṣāvallī* 1.1.1 (*śam no mitraḥ śam varuṇaḥ...*)
+   - *Ānandavallī* 2.1.1 (*brahmavid āpnoti param...*)
+3. **Taittirīya Āraṇyaka**:
+   - TA 3.12.1 (*Puruṣa Sūkta*: *sahasraśīrṣā puruṣaḥ...*)
+   - TA 3.12.16 (*Puruṣa Sūkta* Phalaśruti)
+
+#### Running the KYV Test Harness
+```bash
+# Run the complete Taittirīya data-driven regression suite (<5 ms)
+cargo test -p vyasa-phonetics --test data_driven_taittiriya -- --nocapture
+```
+
+The harness automatically executes:
+- **Karaṇa & Sthāna exhaustive check**: Validates active articulator coordinates across all Sanskrit varṇas.
+- **Svarita taxonomy verification**: Evaluates 25 distinct Svarita context tokens across the 7 corpus passages.
+- **Dvitva gemination verification**: Validates 12 consonant doubling occurrences under TPr 14.1, 14.4, and 14.8.
+
+#### Corpus Management with `scripts/kyv_dataset.py`
+```bash
+# Validate JSON structure and phonological schemas
+python3 scripts/kyv_dataset.py validate
+
+# Inspect all 7 benchmark passages with detailed phonetic annotations
+python3 scripts/kyv_dataset.py inspect
 ```
 
 ---

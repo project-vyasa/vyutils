@@ -1,0 +1,132 @@
+{
+  "collection": "Krishna Yajurveda (Taittiriya Shakha) Phonological Corpus",
+  "description": "Curated test dataset of authentic mantras from the three primary liturgical pillars of the Krishna Yajurveda tradition: Taittiriya Samhita, Taittiriya Upanishad, and Taittiriya Purusha Sukta.",
+  "pratisakhya": "Taittiriya-Pratisakhya (TPr)",
+  "texts": [
+    {
+      "text_name": "Taittiriya Samhita",
+      "abbreviation": "TS",
+      "sections": [
+        {
+          "id": "TS_1_1_1",
+          "title": "Darsapurnamasa Opening (TS 1.1.1)",
+          "mantra": "इ॒षे त्वो॒र्जे त्वा॑ वा॒यव॑ स्थ दे॒वो व॑स्सवि॒ता प्रार्प॑यतु॒ श्रेष्ठ॑तमाय॒ कर्म॑णे",
+          "transliteration_iast": "iṣe tvorje tvā vāyava stha devo vassavitā prārpayatu śreṣṭhatamāya karmaṇe",
+          "svaritas": [
+            { "target": "त्वो॒र्जे", "syllable": "र्जे", "context": "SemivowelSandhi", "expected": "Kshaipra" },
+            { "target": "त्वा॑", "syllable": "त्वा॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "प्रार्प॑यतु", "syllable": "र्प॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" }
+          ],
+          "dvitva": [
+            { "word": "कर्म॑णे", "consonant": "M", "preceded_by": "R", "followed_by": "A", "expected_double": true }
+          ]
+        },
+        {
+          "id": "TS_4_5_1_1",
+          "title": "Sri Rudram - Namakam Anuvaka 1 (TS 4.5.1.1)",
+          "mantra": "नम॑स्ते रु॒द्र म॒न्यव॑ उ॒तोत॒ इष॑वे॒ नमः॑ । नम॑स्ते अस्तु॒ धन्व॑ने बा॒हुभ्या॑मु॒त ते॒ नमः॑ ॥",
+          "transliteration_iast": "namaste rudra manyava utota iṣave namaḥ | namaste astu dhanvane bāhubhyāmutate namaḥ ||",
+          "svaritas": [
+            { "target": "नम॑स्ते", "syllable": "म॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "म॒न्यव॑", "syllable": "व॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "उ॒तोत॒", "syllable": "तो", "context": "HiatusWithoutSandhi", "expected": "Padavrtta" },
+            { "target": "बा॒हुभ्या॑म्", "syllable": "भ्या॑", "context": "InternalSemivowelStem", "expected": "Jatya" }
+          ],
+          "dvitva": [
+            { "word": "रु॒द्र", "consonant": "D", "preceded_by": "U", "followed_by": "R", "expected_double": true },
+            { "word": "अस्तु॒", "consonant": "S", "preceded_by": "A", "followed_by": "T", "expected_double": true }
+          ]
+        },
+        {
+          "id": "TS_4_7_1_1",
+          "title": "Sri Rudram - Camakam Anuvaka 1 (TS 4.7.1.1)",
+          "mantra": "अ॒ग्नावि॑ष्णू स॒जोषा॑से॒मा व॑र्धन्तु वां॒ गिरः॑ । द्यु॒म्नैर्वाजे॑भि॒रा ग॑तम् ॥",
+          "transliteration_iast": "agnāviṣṇū sajoṣāsemā vardhantu vāṃ giraḥ | dyumnairvājebhirā gatam ||",
+          "svaritas": [
+            { "target": "अ॒ग्नावि॑ष्णू", "syllable": "वि॑", "context": "SemivowelSandhi", "expected": "Kshaipra" },
+            { "target": "स॒जोषा॑स्", "syllable": "षा॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "वाजे॑भिः", "syllable": "जे॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" }
+          ],
+          "dvitva": [
+            { "word": "वर्ध॑न्तु", "consonant": "Dh", "preceded_by": "R", "followed_by": "A", "expected_double": true },
+            { "word": "गिरः॑", "consonant": "G", "preceded_by": "NONE", "followed_by": "I", "expected_double": false }
+          ]
+        }
+      ]
+    },
+    {
+      "text_name": "Taittiriya Upanishad",
+      "abbreviation": "TU",
+      "sections": [
+        {
+          "id": "TU_1_1_1",
+          "title": "Siksavalli Santi Mantra (TU 1.1.1)",
+          "mantra": "शं नो॑ मि॒त्रः शं वरु॑णः । शं नो॑ भवत्वर्य॒मा । शं न॒ इन्द्रो॒ बृह॒स्पतिः॑ । शं नो॒ विष्णू॑रुरुक्र॒मः । नमो॒ ब्रह्म॑णे । नम॑स्ते वायो । त्वमे॒व प्र॒त्यक्षं॒ ब्रह्मा॑सि ॥",
+          "transliteration_iast": "śaṃ no mitraḥ śaṃ varuṇaḥ | śaṃ no bhavatvaryamā | śaṃ na indro bṛhaspatiḥ | śaṃ no viṣṇūrurukramaḥ | namo brahmaṇe | namaste vāyo | tvameva pratyakṣaṃ brahmāsi ||",
+          "svaritas": [
+            { "target": "नो॑", "syllable": "नो॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "भवत्वर्य॒मा", "syllable": "त्व", "context": "SemivowelSandhi", "expected": "Kshaipra" },
+            { "target": "विष्णू॑र्", "syllable": "ष्णू॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "प्र॒त्यक्षं॑", "syllable": "त्य", "context": "SemivowelSandhi", "expected": "Kshaipra" }
+          ],
+          "dvitva": [
+            { "word": "ब्रह्म॑णे", "consonant": "M", "preceded_by": "H", "followed_by": "A", "expected_double": true },
+            { "word": "मित्रः", "consonant": "T", "preceded_by": "I", "followed_by": "R", "expected_double": true }
+          ]
+        },
+        {
+          "id": "TU_2_1_1",
+          "title": "Anandavalli / Brahmavalli Opening (TU 2.1.1)",
+          "mantra": "ब्र॒ह्म॒विदा॑प्नोति॒ पर॑म् । तदे॒षा॒ऽभ्युक्ता॑ । स॒त्यं ज्ञानमन॑न्तं॒ ब्रह्म॑ । यो वेद॒ निहि॑तं॒ गुहा॑यां पर॒मे व्यो॑मन् ॥",
+          "transliteration_iast": "brahmavidāpnoti param | tadeṣā'bhyuktā | satyaṃ jñānamanantaṃ brahma | yo veda nihitaṃ guhāyāṃ parame vyoman ||",
+          "svaritas": [
+            { "target": "ब्र॒ह्म॒विदा॑प्नोति", "syllable": "दा॑", "context": "CoalescentLongVowel", "expected": "Prashlishta" },
+            { "target": "तदे॒षा॒ऽभ्युक्ता॑", "syllable": "ऽभ्यु", "context": "AbhinihitaElision", "expected": "Abhinihita" },
+            { "target": "व्यो॑मन्", "syllable": "व्यो॑", "context": "InternalSemivowelStem", "expected": "Jatya" }
+          ],
+          "dvitva": [
+            { "word": "स॒त्यं", "consonant": "T", "preceded_by": "A", "followed_by": "Y", "expected_double": true },
+            { "word": "ब्रह्म॑", "consonant": "M", "preceded_by": "H", "followed_by": "A", "expected_double": true }
+          ]
+        }
+      ]
+    },
+    {
+      "text_name": "Taittiriya Purusha Sukta",
+      "abbreviation": "TA_PS",
+      "sections": [
+        {
+          "id": "TA_3_12_1",
+          "title": "Purusha Sukta Opening (TA 3.12.1)",
+          "mantra": "सह॑स्रशीर्षा॒ पुरु॑षः । स॒ह॒स्रा॒क्षः स॒हस्र॑पात् । स भूमिं॑ वि॒श्वतो॑ वृ॒त्वा । अत्य॑तिष्ठद्दशाङ्गु॒लम् ॥",
+          "transliteration_iast": "sahasraśīrṣā puruṣaḥ | sahasrākṣaḥ sahasrapāt | sa bhūmiṃ viśvato vṛtvā | atyatiṣṭhaddaśāṅgulam ||",
+          "svaritas": [
+            { "target": "सह॑स्र", "syllable": "ह॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "स॒हस्र॑पात्", "syllable": "स्र॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "भूमिं॑", "syllable": "मिं॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "अत्य॑तिष्ठत्", "syllable": "त्य॑", "context": "SemivowelSandhi", "expected": "Kshaipra" }
+          ],
+          "dvitva": [
+            { "word": "शीर्षा॒", "consonant": "Ss", "preceded_by": "R", "followed_by": "A", "expected_double": true }
+          ]
+        },
+        {
+          "id": "TA_3_12_16",
+          "title": "Yajnena Yajnam / Concluding Rk (TA 3.12.16)",
+          "mantra": "य॒ज्ञेन॑ य॒ज्ञम॑यजन्त दे॒वाः । तानि॒ धर्मा॑णि प्रथ॒मान्या॑सन् । ते ह॒ नाकं॑ महि॒मानः॑ सचन्ते । यत्र॒ पूर्वे॑ सा॒ध्याः सन्ति॑ दे॒वाः ॥",
+          "transliteration_iast": "yajñena yajñamayajanta devāḥ | tāni dharmāṇi prathamānyāsan | te ha nākaṃ mahimānaḥ sacante | yatra pūrve sādhyāḥ santi devāḥ ||",
+          "svaritas": [
+            { "target": "य॒ज्ञेन॑", "syllable": "ने॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "धर्मा॑णि", "syllable": "र्मा॑", "context": "PostUdattaConsonant", "expected": "Tairovyanjana" },
+            { "target": "प्रथ॒मान्या॑सन्", "syllable": "न्या॑", "context": "SemivowelSandhi", "expected": "Kshaipra" },
+            { "target": "सा॒ध्याः", "syllable": "ध्याः", "context": "InternalSemivowelStem", "expected": "Jatya" }
+          ],
+          "dvitva": [
+            { "word": "धर्मा॑णि", "consonant": "M", "preceded_by": "R", "followed_by": "A", "expected_double": true },
+            { "word": "यज्ञम॑", "consonant": "Ny", "preceded_by": "A", "followed_by": "A", "expected_double": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

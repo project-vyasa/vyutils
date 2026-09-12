@@ -89,7 +89,9 @@ pub fn sthana(varna: &Varna) -> &'static [Sthana] {
             Ayogavaha::Anusvara
             | Ayogavaha::Candrabindu
             | Ayogavaha::GomukhaAnusvara
-            | Ayogavaha::DvibinduAnusvara => &[Sthana::Nasika],
+            | Ayogavaha::DvibinduAnusvara
+            | Ayogavaha::Nasikya
+            | Ayogavaha::Ranga => &[Sthana::Nasika],
             Ayogavaha::Visarga | Ayogavaha::Ardhavisarga => &[Sthana::Kantha],
             Ayogavaha::Jihvamuliya => &[Sthana::Jihvamula],
             Ayogavaha::Upadhmaniya => &[Sthana::Ostha],

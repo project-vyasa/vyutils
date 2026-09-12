@@ -168,6 +168,14 @@ pub fn emit_roman(tokens: &[Token], script: Script, accent_mode: AccentMode) -> 
                                 "ṃ"
                             }
                         }
+                        Ayogavaha::Nasikya => {
+                            if is_iso {
+                                "ṁ"
+                            } else {
+                                "ṃ"
+                            }
+                        }
+                        Ayogavaha::Ranga => "m̐",
                     };
                     out.push_str(ay_str);
                 }

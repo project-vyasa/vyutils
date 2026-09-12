@@ -109,3 +109,48 @@ Vedic Traditions by Living Practitioner Volume:
 ### Comparison with other Vedas:
 - **Śukla Yajurveda (*Vājasaneyi-Prātiśākhya*)**: Prevalent in North India; characteristic shifts like `य` $\to$ `ज` and `ष` $\to$ `ख` (*khasya ṣaḥ*).
 - **Sāmaveda (*Ṛktantra* & *Puṣpasūtra*)**: A musical singing system using 7 musical notes (`१, २, ३...`) and melodic insertions (*stobhas* like `हाउ, होयि`). This is an audio-musical synthesis domain rather than a textual permutation engine.
+
+---
+
+## Q5: How does Krishna Yajurveda (Taittirīya Śākhā) phonology differ from Rigvedic and Pāṇinian phonetics?
+
+**Answer: It introduces four fundamental phonological concepts codified in the *Taittirīya-Prātiśākhya* (TPr):**
+
+### 1. Dual Coordinate System: Active Articulator (*Karaṇa*) vs. Passive Place (*Sthāna*)
+- Classical Pāṇinian grammar primarily references the passive locus (*Sthāna*—teeth, palate, velum).
+- The TPr (Chapter 2) requires a dual coordinate system distinguishing the static locus from the moving organ (*Karaṇa*):
+  - Velars (*k..ṅ*): Articulated by **Jihvāmādhya** (tongue dorsum/middle) against the velum (TPr 2.35).
+  - Palatals (*c..ñ, y, ś*): Articulated by **Jihvopamadhya** (tongue blade/edges) against the hard palate (TPr 2.36).
+  - Retroflexes (*ṭ..ṇ, r, ṣ, ḷ*): Articulated by **Prativeṣṭitam** (curled tongue tip) against the roof of the palate (TPr 2.37).
+  - Dentals (*t..n, l, s*): Articulated by **Jihvāgram** (tip of tongue) against tooth roots (TPr 2.38).
+  - Bilabials (*p..m*) and Dentolabials (*v*): Articulated by **Adharoṣṭha** (lower lip) (TPr 2.39, 2.43).
+  - Jihvāmūlīya (*ẖ*): Articulated by **Jihvāmūla** (tongue root) (TPr 2.44).
+  - Vowels: Produced with **Hanu** (open vocal tract without consonantal contact) (TPr 2.12).
+  - Pure Nasals (*Nāsikya*, *Anusvāra*): Articulated in **Nāsikābila** (nasal cavity aperture) (TPr 2.50).
+
+### 2. The 8-Fold Svarita Accent Taxonomy (TPr Chapter 20)
+While classical Sanskrit distinguishes only Udātta, Anudātta, and Svarita, the TPr classifies Svarita into 8 distinct varieties split across **Nitya** (independent/stem) and **Enclitic** (post-Udātta dependent):
+1. **Jātya** (जात्य): Inherent stem circumflex with semivowels (*kanyā̀*, *svàr*).
+2. **Kṣaipra** (क्षैप्र): High vowel $\to$ semivowel before dissimilar vowel (*ví + abravīt* $\to$ *vyàbravīt*).
+3. **Abhinihita** (अभिनिहित): Elision/absorption of *a-* after *e/o* (*té + abruvan* $\to$ *té 'bruvan*).
+4. **Praśliṣṭa** (प्रश्लिष्ट): Contraction of two *i/ī* (*diví + iva* $\to$ *divī̀va*).
+5. **Tairovyañjana** (तैरोव्यञ्जन): Standard post-Udātta enclitic across consonants (*agním īḷe*).
+6. **Tairovirāma** (तैरोविराम): Svarita crossing a caesura or pause boundary.
+7. **Pādavṛtta** (पादवृत्त): Hiatus where Sandhi is suspended without coalescence (*pra ugam*).
+8. **Tathābhāvya** (तथाभाव्य): Contextual adoption of circumflex contour.
+
+### 3. Consonant Gemination / Doubling (*Dvirvacana / Dvitva*) (TPr Chapter 14)
+Authentic Taittirīya chanting strictly doubles consonants under specific conditions:
+- **TPr 14.1**: Post-vocalic consonants beginning a conjunct double (*aśvaḥ* $\to$ *aśśvaḥ*, *agnim* $\to$ *aggnim*).
+- **TPr 14.4**: Any consonant preceded by *r* or *h* doubles (*arkaḥ* $\to$ *arkkaḥ*, *dharmaḥ* $\to$ *dharmmaḥ*, *śīrṣan* $\to$ *śīrṣṣan*).
+
+### 4. *Raṅga* and *Nāsikya* Ayogavāhas (TPr Chapter 17)
+- **Raṅga**: When word-final *n* or *m* precedes sibilants or semivowels, a melodic nasal prolongation occurs, lasting $1.5$–$2.0$ mātrās of vocalic tone followed by $0.5$ mātrā of pure nasal resonance (e.g. TS 1.1.1: *mahā̐ asi*, Camakam: *yā̐strīn*).
+- **Nāsikya**: A distinct pure nasal Ayogavāha resonant sound produced solely in the nasal cavity without oral contact.
+
+### 5. Project Vyasa Implementation
+- Implemented natively in `vyasa-phonetics::taittiriya`.
+- Driven by a version-controlled test corpus (`crates/vyasa-phonetics/tests/data/kyv_corpus.json`) across the 3 core Taittirīya texts (*Taittirīya Saṃhitā*, *Taittirīya Upaniṣad*, and *Puruṣa Sūkta*).
+- Validated via `cargo test -p vyasa-phonetics --test data_driven_taittiriya`.
+- Exposed to WebAssembly and TypeScript via `@project-vyasa/sanskrit-wasm`.
+

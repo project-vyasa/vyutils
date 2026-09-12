@@ -600,6 +600,12 @@ pub fn emit_brahmic(tokens: &[Token], script: Script, accent_mode: AccentMode) -
                         Ayogavaha::Ardhavisarga => out.push('\u{1CF2}'),
                         Ayogavaha::GomukhaAnusvara => out.push('\u{1CE9}'),
                         Ayogavaha::DvibinduAnusvara => out.push('\u{1CEA}'),
+                        Ayogavaha::Nasikya => out.push('\u{1CE9}'),
+                        Ayogavaha::Ranga => {
+                            if let Some(ch) = char::from_u32(base + 0x01) {
+                                out.push(ch);
+                            }
+                        }
                     }
                 }
 

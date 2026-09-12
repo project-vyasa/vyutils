@@ -448,6 +448,10 @@ dependencies = [
 [[package]]
 name = "vyasa-phonetics"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "vyasa-sanskrit-wasm"
@@ -455,6 +459,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde-wasm-bindgen",
+ "serde_json",
  "vyasa-lipi",
  "vyasa-patha",
  "vyasa-phonetics",

@@ -56,3 +56,44 @@ fn test_pratyahara_checks() {
     assert!(check_pratyahara_contains("yaṇ", "la").unwrap());
     assert!(!check_pratyahara_contains("yaṇ", "k").unwrap());
 }
+
+#[test]
+fn test_taittiriya_wasm_apis() {
+    // Svarita types retrieval via JSON
+    let svaritas_json = get_taittiriya_svaritas_json().unwrap();
+    let svaritas: Vec<dto::TaittiriyaSvaritaDto> = serde_json::from_str(&svaritas_json).unwrap();
+    assert_eq!(svaritas.len(), 8);
+    assert!(svaritas.iter().any(|s| s.id == "Jatya" && s.is_nitya));
+    assert!(svaritas.iter().any(|s| s.id == "Kshaipra" && s.is_nitya));
+    assert!(svaritas
+        .iter()
+        .any(|s| s.id == "Tairovyanjana" && !s.is_nitya));
+
+    // Varṇa inspection with TPr Karaṇa via JSON
+    let t_json = inspect_taittiriya_varna_json("t").unwrap();
+    let t_dto: dto::TaittiriyaVarnaDto = serde_json::from_str(&t_json).unwrap();
+    assert!(t_dto.karana.contains("Jihvāgram"));
+    assert_eq!(t_dto.sthana, vec!["Danta (Dental)"]);
+
+    let c_json = inspect_taittiriya_varna_json("c").unwrap();
+    let c_dto: dto::TaittiriyaVarnaDto = serde_json::from_str(&c_json).unwrap();
+    assert!(c_dto.karana.contains("Jihvopamadhya"));
+
+    // Direct DTO function
+    let k_dto = inspect_taittiriya_varna_dto("k").unwrap();
+    assert!(k_dto.karana.contains("Jihvāmādhya"));
+
+    // Svarita context classification
+    let res = classify_taittiriya_svarita_by_context("SemivowelSandhi").unwrap();
+    assert_eq!(res, Some("Kshaipra".to_string()));
+
+    let res_abh = classify_taittiriya_svarita_by_context("AbhinihitaElision").unwrap();
+    assert_eq!(res_abh, Some("Abhinihita".to_string()));
+
+    // Dvitva checks
+    let dvitva_double = check_taittiriya_dvitva(Some("r".to_string()), "k", None).unwrap();
+    assert!(dvitva_double);
+
+    let dvitva_no_double = check_taittiriya_dvitva(None, "k", Some("a".to_string())).unwrap();
+    assert!(!dvitva_no_double);
+}

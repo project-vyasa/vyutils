@@ -165,6 +165,8 @@ pub enum Ayogavaha {
     GomukhaAnusvara,  // Vedic gomukha anusvāra (`\u{1CE9}`)
     DvibinduAnusvara, // Vedic dvi-bindu anusvāra (`\u{1CEA}`)
     Candrabindu,      // Nasalization mark (`\u{0901}` / `\u{0303}`)
+    Nasikya,          // Taittirīya-Prātiśākhya pure nasal sound (TPr 2.50)
+    Ranga,            // Taittirīya musical nasal prolongation before sibilants (TPr 17.1)
 }
 
 /// Unified sound representation (Varṇa).
